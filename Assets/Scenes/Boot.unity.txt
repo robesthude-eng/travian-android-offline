@@ -1,0 +1,8 @@
+This is placeholder for Boot scene.
+In Unity Editor:
+- Create empty scene Boot
+- Add GameObject GameManager with scripts GameManager.cs, TimeManager.cs
+- Add DontDestroyOnLoad
+- Load Main scene additive
+
+For full import: File -> Open this folder as Unity project (2022.3 LTS)

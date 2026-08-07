@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Travian - 2-я деревня поселенцами</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
+body{background:#0e0b07;display:flex;justify-content:center;padding:8px}
+.phone{width:420px;height:880px;background:#f7eed0;border-radius:28px;border:7px solid #111;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.7);position:relative}
+.top{background:#2b2112;color:#e9d9a3;display:flex;gap:4px;padding:8px}
+.top .r{flex:1;background:#3a2f1c;border-radius:10px;padding:5px 6px;font-size:11px;display:flex;gap:4px;align-items:center}
+.top b{color:#fff}
+.tabs{display:flex;background:#1e1810;padding:6px;gap:5px}
+.tabs button{flex:1;border:0;border-radius:12px;padding:10px 2px;background:#312817;color:#b8a882;font-weight:800;font-size:10px;cursor:pointer}
+.tabs button.active{background:#f7eed0;color:#1e1810}
+.window{flex:1;display:none;flex-direction:column;overflow:hidden;background:#ede3c0}
+.window.active{display:flex}
+.header{background:linear-gradient(135deg,#2b2112,#5a3a18);color:#fff;padding:12px}
+.header h2{font-size:13px}
+.header small{font-size:10px;opacity:.8}
+.cp-bar{width:100%;height:12px;background:#3a2f1c;border-radius:10px;margin:8px 0;overflow:hidden;border:2px solid #2b2112}
+.cp-bar div{height:100%;background:linear-gradient(90deg,#2a9d5a,#7CFC00);width:68%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:#111}
+.residence-card{background:#fffef5;border:2px solid #c9b07a;border-radius:14px;padding:12px;margin:10px 12px;display:flex;gap:12px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.residence-card .ico{width:64px;height:64px;background:#f7eed0;border-radius:12px;border:2px solid #c9b07a;display:flex;align-items:center;justify-content:center;font-size:32px}
+.settler-row{display:flex;gap:8px;background:#fff;border:2px solid #d9c99a;border-radius:12px;padding:10px;margin:6px 12px;align-items:center}
+.settler-row .uico{width:48px;height:48px;background:#f7eed0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;border:2px solid #c9b07a}
+.btn{padding:10px 14px;border:0;border-radius:12px;background:#2a9d5a;color:#fff;font-weight:900;font-size:11px;cursor:pointer}
+.btn:disabled{background:#aaa}
+.btn.sec{background:#e8dcc0;color:#2b2112}
+.map-select{flex:1;background:#7fbf5a;position:relative;overflow:hidden}
+.map-grid{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:520px;height:520px;display:grid;grid-template-columns:repeat(13,1fr);grid-template-rows:repeat(13,1fr);gap:2px}
+.tile{border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;position:relative;background:#a8df7a}
+.tile.village{background:#f7eed0;border:2px solid #5a3a18;font-weight:900}
+.tile.free{background:#eaffd0;border:2px dashed #4a7a1f;animation:pulse 1.8s infinite}
+.tile.occupied{background:#ff9a9a;border:1px solid #a33;opacity:.5}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.modal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:88%;background:#fffef2;border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,.6);z-index:100;padding:14px;border:3px solid #3a2f1c;display:none}
+.modal.show{display:block}
+.bottom-nav{display:flex;background:#14100a;color:#8a7f68;padding:6px;border-top:2px solid #2a2112}
+.bottom-nav div{flex:1;text-align:center;font-size:9px;padding:6px 0;border-radius:10px;cursor:pointer}
+.bottom-nav div.active{background:#2f2616;color:#f7eed0;font-weight:900}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="top">
+    <div class="r">🪵 <b>12.4k</b></div><div class="r">🧱 <b>9.8k</b></div><div class="r">⛏️ <b>8.5k</b></div><div class="r">🌾 <b>15k</b></div><div class="r">👥 <b>215</b></div>
+  </div>
+  <div class="tabs">
+    <button class="active" id="tab-info" onclick="showWin('info')">🏛️ Резиденция</button>
+    <button id="tab-settler" onclick="showWin('settler')">🎒 Поселенцы</button>
+    <button id="tab-map" onclick="showWin('map')">🗺️ Основать</button>
+  </div>
+
+  <!-- RESIDENCE INFO -->
+  <div id="win-info" class="window active">
+    <div class="header">
+      <h2>Резиденция Уровень 10 — Слоты расширения</h2>
+      <small>Дает слоты для основания новых деревень. Lvl10=1 слот, Lvl20=2 слота. Дворец 10/15/20=3 слота. Столицу нельзя захватить.</small>
+      <div class="cp-bar"><div style="width:68%">Культура 340 / 500</div></div>
+      <small>Культура: Главное 20=77, Склад 20=38, Амбар 38, Резиденция 20=77, Рынок 20=115, Ратуша праздники 500/2000</small>
+    </div>
+    <div class="residence-card">
+      <div class="ico">👑</div>
+      <div style="flex:1">
+        <b style="font-size:12px">Резиденция 10 ур.</b><br>
+        <small style="font-size:10px">Слоты: 1/2 использовано (основана Рим II)<br>Занято: 1 (Рим II в 15,-8)<br>Свободно: 1 — можно основать еще 1 деревню</small>
+        <div style="display:flex;gap:6px;margin-top:6px"><span style="background:#d4f7d4;padding:2px 8px;border-radius:8px;font-size:10px;border:1px solid #8ac48a">✅ Слот lvl10 свободен</span><span style="background:#ffe4b8;padding:2px 8px;border-radius:8px;font-size:10px;border:1px solid #d4a85a">⏳ Нужен lvl20 для 2 слота</span></div>
+      </div>
+    </div>
+    <div style="margin:10px 12px;background:#fff3cd;border-radius:12px;padding:10px;border:2px solid #ffe69c;font-size:11px">
+      <b>Требования для 2-й деревни (Травиан классика):</b><br>
+      ✅ Культура 500 (сейчас 340 → не хватает 160, проведи праздник в Ратуше)<br>
+      ✅ Резиденция 10 (есть)<br>
+      ✅ 3 Поселенца (есть 2, нужен еще 1)<br>
+      ✅ 750 каждого ресурса у поселенцев (несут с собой)<br>
+      ✅ Свободное место на карте (10 полей от других деревень)
+    </div>
+    <div style="padding:0 12px;display:flex;gap:8px"><button class="btn sec" style="flex:1" onclick="alert('Праздник в Ратуше: Маленький 6400 дерева... дает 500 КП за 24ч')">🎪 Провести праздник +500 КП</button><button class="btn" style="flex:1" onclick="showWin('settler')">🎒 Нанять поселенцев</button></div>
+  </div>
+
+  <!-- SETTLERS TRAINING -->
+  <div id="win-settler" class="window">
+    <div class="header"><h2>Обучение поселенцев — Резиденция</h2><small>Каждый поселенец стоит 5800 дерева 4400 глины 4600 железа 5200 зерна + 3 населения. Время: 5:23:20 (ускоряется Главным Зданием)</small></div>
+
+    <div class="settler-row">
+      <div class="uico">🎒</div>
+      <div style="flex:1"><b style="font-size:12px">Поселенец — основывает деревню</b><br><small>Требует: Резиденция 10, Свободный слот<br>Скорость: 5 полей/ч, несет 750 каждого реса для основания</small></div>
+      <div style="text-align:center"><small>Есть: 2/3</small><br><button class="btn" onclick="trainSettler()">НАНЯТЬ<br>5800🪵</button></div>
+    </div>
+
+    <div style="margin:10px 12px;background:#fff;border-radius:12px;padding:10px;border:2px solid #d9c99a;font-size:11px">
+      <b>Очередь обучения:</b><br>
+      <div style="display:flex;gap:8px;align-items:center;margin:6px 0;background:#f7eed0;padding:6px 8px;border-radius:8px"><span>🎒 Поселенец</span><div style="flex:1;height:8px;background:#e9e1c0;border-radius:8px;overflow:hidden"><div style="width:42%;height:100%;background:#2a9d5a"></div></div><span>03:12:44</span></div>
+      <small>В Травиане можно ставить 3 поселенца только если есть свободные слоты. Каждый слот = 3 поселенца макс.</small>
+    </div>
+
+    <div style="padding:10px 12px;font-size:10px;background:#e9d9a3;border-top:2px solid #d9c99a">
+      Код: <code>SettlementManager.CanFoundVillage()</code> проверяет культуру, слоты, поселенцев. Обучение — <code>BuildingSystem</code> как обычное здание но в Резиденции. Стоимость в <code>settlerCostPerUnit</code>
+    </div>
+  </div>
+
+  <!-- MAP FOUNDING -->
+  <div id="win-map" class="window">
+    <div class="header"><h2>Выбери место для 2-й деревни — 10 полей от других</h2><small>Зеленые пунктирные — свободные долины. Красные — занято. Синие — твои. Клик по зеленой → Основать деревню (требует 3 поселенца). Время пути поселенцев 5 полей/ч.</small></div>
+    <div class="map-select">
+      <div class="map-grid" id="mapGrid"></div>
+    </div>
+    <div style="background:#f7eed0;padding:8px 12px;font-size:10px;display:flex;justify-content:space-between"><span>🟩 Свободно | 🟥 Занято | 🏛️ Твоя | Коорд: <b id="coord">0,0</b></span><button class="btn" style="width:auto;padding:6px 12px" onclick="centerMap()">🎯 К моей деревне</button></div>
+  </div>
+
+  <div class="bottom-nav">
+    <div>🌲<br>Поля</div><div class="active">🏛️<br>Расширение</div><div>🗺️<br>Карта</div>
+  </div>
+
+  <!-- FOUND MODAL -->
+  <div class="modal" id="foundModal">
+    <div style="text-align:right"><span style="background:#111;color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer" onclick="closeFound()">✕</span></div>
+    <h3 style="font-size:13px">🏛️ Основать новую деревню в <span id="foundCoord">(20,-15)</span>?</h3>
+    <div style="font-size:11px;margin:8px 0;line-height:1.4">
+      Требования:<br>
+      ✅ 3 Поселенца (есть)<br>
+      ✅ Культура 500 (есть 540 после праздника)<br>
+      ✅ Резиденция 10 (есть)<br>
+      ✅ Слот (1 свободно)<br><br>
+      Новая деревня: <b>Рим III</b><br>
+      Старт: 750 каждого реса, ГЗ 1, Склад 1, Амбар 1<br>
+      Время пути поселенцев: 02:15:00<br>
+      Цена основания встроена в поселенцев (5800W...)
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn sec" style="flex:1" onclick="closeFound()">Отмена</button>
+      <button class="btn" style="flex:1" onclick="confirmFound()">🏛️ ОСНОВАТЬ</button>
+    </div>
+    <div style="font-size:9px;color:#8a7a5a;margin-top:8px">В Unity: <code>SettlementManager.FoundVillage(fromId, pos)</code> → создает new Village, забирает 3 поселенца, списывает культуру, SaveSystem.Save()</div>
+  </div>
+</div>
+
+<script>
+const mapGrid=document.getElementById('mapGrid');
+let selectedPos=null;
+for(let y=-6;y<=6;y++){
+  for(let x=-6;x<=6;x++){
+    const tile=document.createElement('div');
+    tile.className='tile';
+    const absx=x+2, absy=y-3; // offset to make (0,0) near center
+    const realX=absx, realY=absy;
+    if(realX===0&&realY===0){ tile.classList.add('village'); tile.textContent='🏛️'; tile.title='Рим I (0,0) — твоя столица'; }
+    else if(Math.abs(realX)<3 && Math.abs(realY)<3){ tile.classList.add('occupied'); tile.textContent='⛔'; }
+    else if(Math.random()<0.15){ tile.classList.add('free'); tile.textContent='🌿'; tile.title=`Свободная долина ${realX},${realY}\n4-4-4-6 — клик чтобы основать`; tile.onclick=()=>openFound(realX,realY); }
+    else if(Math.random()<0.08){ tile.classList.add('occupied'); tile.textContent='🏚️'; }
+    else{ tile.style.background='#b8e68a'; }
+    tile.onmouseenter=()=>document.getElementById('coord').textContent=`${realX},${realY}`;
+    mapGrid.appendChild(tile);
+  }
+}
+function showWin(which){
+  document.querySelectorAll('.window').forEach(w=>w.classList.remove('active'));
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('win-'+which).classList.add('active');
+  document.getElementById('tab-'+which).classList.add('active');
+}
+function trainSettler(){ alert('Нанять поселенца?\nСтоимость: 5800🪵 4400🧱 4600⛏️ 5200🌾\nВремя: 5:23:20\nВ Unity: UnitTrainingSystem.Enqueue(settler,1) в Резиденции'); }
+function openFound(x,y){ selectedPos={x,y}; document.getElementById('foundCoord').textContent=`(${x},${y})`; document.getElementById('foundModal').classList.add('show'); }
+function closeFound(){ document.getElementById('foundModal').classList.remove('show'); }
+function confirmFound(){
+  alert(`Основание деревни в ${selectedPos.x},${selectedPos.y} запущено!\n3 поселенца идут 02:15:00\nПосле прибытия: создана Рим III с 750 ресов\nВ Unity: SettlementManager.FoundVillage(0, {x:${selectedPos.x},y:${selectedPos.y}})\n\nСохранение + переход в новую деревню`);
+  closeFound();
+  // simulate
+  document.querySelector('.top').innerHTML='<div class="r">🪵 <b>750</b></div><div class="r">🧱 <b>750</b></div><div class="r">⛏️ <b>750</b></div><div class="r">🌾 <b>750</b></div><div class="r">👥 <b>12</b></div>';
+}
+function centerMap(){ alert('Центрировать на (0,0) — твоя деревня'); }
+</script>
+</body>
+</html>

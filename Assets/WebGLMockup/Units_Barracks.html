@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Казарма - Юниты - Travian Android</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
+body{background:#0e0b07;display:flex;justify-content:center;padding:10px}
+.phone{width:420px;height:860px;background:#f7eed0;border-radius:28px;border:7px solid #111;display:flex;flex-direction:column;overflow:hidden}
+.top{background:#2b2112;color:#e9d9a3;padding:10px;display:flex;gap:4px;font-size:11px}
+.top .r{flex:1;background:#3a2f1c;border-radius:10px;padding:5px 6px}
+.top b{color:#fff}
+.tabs{display:flex;background:#1e1810;padding:6px;gap:5px}
+.tabs button{flex:1;border:0;border-radius:12px;padding:10px 2px;background:#312817;color:#b8a882;font-weight:800;font-size:10px;cursor:pointer}
+.tabs button.active{background:#f7eed0;color:#1e1810}
+.building-header{background:linear-gradient(135deg,#3a2f1c,#5a3d1f);color:#e9d9a3;padding:14px;display:flex;gap:12px;align-items:center}
+.building-header .ico{font-size:36px;background:#f7eed0;border-radius:14px;width:56px;height:56px;display:flex;align-items:center;justify-content:center}
+.building-header h2{font-size:14px;color:#fff}
+.building-header small{font-size:10px;opacity:.8}
+.queue{background:#fff3cd;border:1px solid #ffe69c;padding:8px 12px;display:flex;gap:8px;align-items:center;font-size:11px}
+.queue .bar{flex:1;height:8px;background:#e9e1c0;border-radius:8px;overflow:hidden}
+.queue .bar div{height:100%;background:#2a9d5a;width:42%}
+.units{flex:1;overflow:auto;padding:10px;background:#ede3c0}
+.unit-card{background:#fffef5;border:2px solid #d9c99a;border-radius:14px;padding:10px;display:flex;gap:10px;margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,.15);position:relative}
+.unit-card.locked{opacity:.5;filter:grayscale(1)}
+.unit-card .uico{width:64px;height:64px;background:#f7eed0;border-radius:12px;border:2px solid #c9b07a;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0}
+.unit-card .info{flex:1}
+.unit-card .name{font-weight:900;font-size:12px;display:flex;gap:6px;align-items:center}
+.unit-card .stats{display:flex;gap:8px;margin:4px 0;font-size:10px}
+.unit-card .stats span{background:#f2e6b8;padding:2px 6px;border-radius:6px;border:1px solid #d9c99a}
+.unit-card .cost{font-size:10px;color:#5a4a2a;margin-top:2px}
+.unit-card .train{background:#2a9d5a;color:#fff;border:0;border-radius:10px;padding:8px 14px;font-weight:900;font-size:11px;cursor:pointer;align-self:center}
+.unit-card .train:disabled{background:#aaa;cursor:not-allowed}
+.unit-card .lock-badge{position:absolute;top:-8px;right:-8px;background:#b91c1c;color:#fff;font-size:9px;padding:3px 7px;border-radius:12px;border:2px solid #fff}
+.tribe-selector{display:flex;background:#e9d9a3;padding:6px;gap:6px}
+.tribe-selector button{flex:1;border:2px solid #b89a5a;border-radius:10px;padding:8px 2px;background:#fffef5;font-weight:800;font-size:11px;cursor:pointer}
+.tribe-selector button.active{background:#2b2112;color:#e9d9a3;border-color:#2b2112}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="top">
+    <div class="r">🪵 <b>1240</b></div><div class="r">🧱 <b>980</b></div><div class="r">⛏️ <b>850</b></div><div class="r">🌾 <b>2310</b></div><div class="r">👥 <b>127</b></div>
+  </div>
+  <div class="tribe-selector">
+    <button class="active" onclick="setTribe('roman')">🏛️ Римляне</button>
+    <button onclick="setTribe('gaul')">🟦 Галлы</button>
+    <button onclick="setTribe('german')">⚔️ Германцы</button>
+  </div>
+  <div class="tabs">
+    <button class="active" onclick="showTab('barracks')">🛡️ Казарма (пех)</button>
+    <button onclick="showTab('stable')">🐴 Конюшня</button>
+    <button onclick="showTab('workshop')">🏗️ Мастерская</button>
+  </div>
+
+  <div class="building-header">
+    <div class="ico" id="bldIco">🛡️</div>
+    <div><h2 id="bldName">Казарма Уровень 5</h2><small id="bldDesc">Тренирует пехоту. Скорость обучения +10% за уровень. Ускоряется Главным Зданием.</small></div>
+  </div>
+
+  <div class="queue">
+    <span>🏗️ В очереди: 10 Легионеров</span>
+    <div class="bar"><div></div></div>
+    <span>01:24</span>
+  </div>
+
+  <div class="units" id="unitsList"></div>
+</div>
+
+<script>
+const unitsDB = {
+  roman: {
+    barracks: [
+      {id:'legion', name:'Легионер', ico:'🗡️', atk:40, defI:35, defC:50, speed:6, carry:50, crop:1, cost:{W:120,C:100,I:150,Cr:30}, time:120, req:null, built:true},
+      {id:'praet', name:'Преторианец', ico:'🛡️', atk:30, defI:65, defC:35, speed:5, carry:20, crop:1, cost:{W:100,C:130,I:160,Cr:70}, time:150, req:'Казарма 3 + Академия 3', built:true},
+      {id:'imper', name:'Имперец', ico:'⚔️', atk:70, defI:40, defC:25, speed:7, carry:50, crop:1, cost:{W:150,C:160,I:210,Cr:80}, time:180, req:'Казарма 5 + Академия 5', built:false},
+    ],
+    stable: [
+      {id:'legati', name:'Конный разведчик', ico:'🐴', atk:0, defI:20, defC:10, speed:16, carry:0, crop:2, cost:{W:140,C:160,I:20,Cr:40}, time:200, built:true},
+      {id:'imperatoris', name:'Императорская конница', ico:'🏇', atk:120, defI:65, defC:50, speed:14, carry:100, crop:3, cost:{W:550,C:440,I:550,Cr:100}, time:400, built:true},
+      {id:'caesaris', name:'Конница Цезаря', ico:'🏇‍♂️', atk:180, defI:80, defC:105, speed:10, carry:70, crop:4, cost:{W:550,C:640,I:800,Cr:180}, time:600, built:false},
+    ],
+    workshop: [
+      {id:'ram', name:'Таран', ico:'🚪', atk:60, defI:30, defC:75, speed:4, carry:0, crop:3, cost:{W:900,C:360,I:500,Cr:70}, time:1200, built:true},
+      {id:'cata', name:'Катапульта огневая', ico:'🔥', atk:75, defI:60, defC:10, speed:3, carry:0, crop:6, cost:{W:950,C:1350,I:600,Cr:90}, time:1800, built:true},
+    ]
+  },
+  gaul: {
+    barracks: [
+      {id:'phalanx', name:'Фаланга', ico:'🔱', atk:40, defI:50, defC:55, speed:7, carry:35, crop:1, cost:{W:100,C:130,I:55,Cr:30}, built:true},
+      {id:'sword', name:'Мечник', ico:'🗡️', atk:65, defI:35, defC:20, speed:6, carry:45, crop:1, cost:{W:140,C:150,I:185,Cr:60}, built:true},
+      {id:'path', name:'Следопыт', ico:'🏃', atk:10, defI:20, defC:10, speed:17, carry:0, crop:2, cost:{W:170,C:150,I:20,Cr:40}, built:true},
+    ],
+    stable: [
+      {id:'theut', name:'Тевтатский гром', ico:'⚡🐴', atk:90, defI:25, defC:40, speed:19, carry:75, crop:2, cost:{W:350,C:450,I:230,Cr:60}, built:true},
+      {id:'druid', name:'Друид', ico:'🧙‍♂️', atk:45, defI:115, defC:55, speed:16, carry:35, crop:2, cost:{W:360,C:330,I:280,Cr:120}, built:true},
+      {id:'haed', name:'Эдуй', ico:'🐴‍♂️', atk:140, defI:50, defC:165, speed:13, carry:65, crop:3, cost:{W:500,C:620,I:675,Cr:170}, built:false},
+    ],
+    workshop: [
+      {id:'ramG', name:'Таран', ico:'🐏', atk:50, defI:30, defC:105, speed:4, carry:0, crop:3, cost:{W:700,C:500,I:400,Cr:80}, built:true},
+      {id:'treb', name:'Требюше', ico:'🎯', atk:70, defI:45, defC:10, speed:3, carry:0, crop:6, cost:{W:900,C:1200,I:600,Cr:90}, built:true},
+    ]
+  },
+  german: {
+    barracks: [
+      {id:'club', name:'Дубинщик', ico:'🏏', atk:40, defI:20, defC:5, speed:7, carry:60, crop:1, cost:{W:95,C:75,I:40,Cr:40}, built:true},
+      {id:'spear', name:'Копьеносец', ico:'🔱', atk:10, defI:35, defC:60, speed:7, carry:40, crop:1, cost:{W:145,C:70,I:85,Cr:40}, built:true},
+      {id:'axe', name:'Топорщик', ico:'🪓', atk:60, defI:30, defC:30, speed:6, carry:50, crop:1, cost:{W:130,C:120,I:170,Cr:70}, built:true},
+      {id:'scoutG', name:'Скаут', ico:'👣', atk:0, defI:10, defC:5, speed:9, carry:0, crop:1, cost:{W:160,C:100,I:50,Cr:20}, built:true},
+    ],
+    stable: [
+      {id:'pal', name:'Паладин', ico:'⚔️🐴', atk:55, defI:100, defC:40, speed:10, carry:110, crop:2, cost:{W:370,C:270,I:290,Cr:75}, built:true},
+      {id:'teuton', name:'Тевтонец', ico:'🖤🐴', atk:150, defI:50, defC:75, speed:9, carry:80, crop:3, cost:{W:450,C:515,I:480,Cr:80}, built:true},
+    ],
+    workshop: [
+      {id:'ramGe', name:'Таран', ico:'🔨', atk:65, defI:30, defC:80, speed:4, carry:0, crop:3, cost:{W:1000,C:300,I:350,Cr:70}, built:true},
+      {id:'cataGe', name:'Катапульта', ico:'💣', atk:75, defI:50, defC:10, speed:3, carry:0, crop:6, cost:{W:900,C:1200,I:600,Cr:90}, built:true},
+    ]
+  }
+};
+
+let curTribe='roman', curTab='barracks';
+
+function setTribe(t){curTribe=t; document.querySelectorAll('.tribe-selector button').forEach((b,i)=>b.classList.toggle('active',(t==='roman'&&i==0)||(t==='gaul'&&i==1)||(t==='german'&&i==2))); render();}
+function showTab(tab){
+  curTab=tab;
+  document.querySelectorAll('.tabs button').forEach((b,i)=>b.classList.toggle('active',(tab==='barracks'&&i==0)||(tab==='stable'&&i==1)||(tab==='workshop'&&i==2)));
+  const map={barracks:{ico:'🛡️',name:`Казарма Уровень 5`,desc:'Пехота. +10% скорость за уровень.'}, stable:{ico:'🐴',name:'Конюшня Уровень 5',desc:'Кавалерия и разведка. Нужна Академия 5.'}, workshop:{ico:'🏗️',name:'Мастерская Уровень 3',desc:'Осада: тараны и катапульты. Нужна Академия 10.'}};
+  document.getElementById('bldIco').textContent=map[tab].ico;
+  document.getElementById('bldName').textContent=map[tab].name;
+  document.getElementById('bldDesc').textContent=map[tab].desc;
+  render();
+}
+function render(){
+  const list=document.getElementById('unitsList');
+  list.innerHTML='';
+  const arr = (unitsDB[curTribe][curTab]||[]);
+  arr.forEach(u=>{
+    const card=document.createElement('div');
+    card.className='unit-card'+(u.built?'':' locked');
+    card.innerHTML=`
+      <div class="uico">${u.ico}</div>
+      <div class="info">
+        <div class="name">${u.name} ${u.req?`<span style="font-size:9px;color:#a33">(${u.req})</span>`:''}</div>
+        <div class="stats"><span>⚔️ ${u.atk}</span><span>🛡️П ${u.defI}</span><span>🛡️К ${u.defC}</span><span>💨 ${u.speed}</span><span>📦 ${u.carry}</span><span>🌾 ${u.crop}</span></div>
+        <div class="cost">💰 🪵${u.cost.W} 🧱${u.cost.C} ⛏️${u.cost.I} 🌾${u.cost.Cr} ⏱️${u.time}с</div>
+      </div>
+      <button class="train" ${u.built?'':'disabled'}>${u.built?'НАНЯТЬ':'🔒'}</button>
+      ${!u.built?'<div class="lock-badge">Треб. исследование</div>':''}
+    `;
+    const btn=card.querySelector('.train');
+    btn.onclick=()=>{if(u.built) alert(`Нанять 1 x ${u.name}?\nСписано: ${u.cost.W}🪵 ${u.cost.C}🧱 ${u.cost.I}⛏️ ${u.cost.Cr}🌾\nВремя: ${u.time}с ускоряется казармой.\nВ Unity: UnitTrainingSystem.Enqueue("${u.id}", 1)`);};
+    list.appendChild(card);
+  });
+}
+render();
+</script>
+</body>
+</html>
