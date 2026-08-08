@@ -7,6 +7,11 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Публикует релиз с этим тегом, например v1.0.0. Тег создаётся автоматически на текущем коммите. Оставь пустым для обычной сборки.'
+        required: false
+        default: ''
 
 permissions:
   contents: write        # needed to publish the release on a tag
@@ -34,8 +39,11 @@ jobs:
         run: |
           set -euo pipefail
           CODE="${GITHUB_RUN_NUMBER}"
+          REL_TAG="${{ github.event.inputs.release_tag }}"
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             NAME="${GITHUB_REF_NAME#v}"
+          elif [ -n "$REL_TAG" ]; then
+            NAME="${REL_TAG#v}"
           else
             BASE="$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' | cut -d. -f1,2 || true)"
             [ -n "$BASE" ] || BASE="1.0"
@@ -216,10 +224,15 @@ jobs:
           path: build/*.apk
           retention-days: 60
 
-      - name: Publish release on tag
-        if: startsWith(github.ref, 'refs/tags/v')
+      # Runs either on a real tag push, or on a manual run that was given a
+      # release_tag — in which case the action creates the tag itself at this
+      # commit. That second path exists because tags cannot always be pushed
+      # directly, while the workflow token can always write them.
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.release_tag != ''
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event.inputs.release_tag != '' && github.event.inputs.release_tag || github.ref_name }}
           name: Travian Offline ${{ env.VERSION_NAME }}
           files: build/*.apk
           generate_release_notes: true
