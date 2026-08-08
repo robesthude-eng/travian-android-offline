@@ -40,12 +40,12 @@ func rebuild() -> void:
 	ring_card.add_child(ring_holder)
 
 	# Backdrop village image
-	var bg_tex := Art.village_center_bg()
+	var bg_tex := Art.village_kingdoms_bg()
 	if bg_tex:
 		_bg_texture = Style.texture(bg_tex, Vector2(0,0))
 		_bg_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		_bg_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		_bg_texture.modulate = Color(1,1,1,0.18)
+		_bg_texture.modulate = Color(1,1,1,1.0)
 		_bg_texture.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		_bg_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		ring_holder.add_child(_bg_texture)

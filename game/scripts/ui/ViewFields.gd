@@ -47,7 +47,7 @@ func rebuild() -> void:
 		_ring_bg = Style.texture(tex, Vector2(0,0))
 		_ring_bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		_ring_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		_ring_bg.modulate = Color(1,1,1,0.08)
+		_ring_bg.modulate = Color(1,1,1,0.28)
 		_ring_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		_ring_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		ring_holder.add_child(_ring_bg)

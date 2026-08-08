@@ -1,6 +1,6 @@
 extends Control
 
-## Main UI shell: top wood bar, left sidebar, central parchment, bottom nav
+## Main UI shell: top wood bar, FULLSCREEN parchment, bottom nav (no sidebar)
 
 const T := preload("res://game/scripts/core/Tables.gd")
 const Sim := preload("res://game/scripts/core/Sim.gd")
@@ -15,7 +15,6 @@ const ViewArmy := preload("res://game/scripts/ui/ViewArmy.gd")
 const ViewHero := preload("res://game/scripts/ui/ViewHero.gd")
 const ViewReports := preload("res://game/scripts/ui/ViewReports.gd")
 const NewGamePanel := preload("res://game/scripts/ui/NewGamePanel.gd")
-const Sidebar := preload("res://game/scripts/ui/Sidebar.gd")
 
 var _content: Control
 var _views := {}
@@ -31,8 +30,6 @@ var _modal_layer: Control
 var _toast_label: Label
 var _toast_timer := 0.0
 var _pending_offline := {}
-var _sidebar: Control
-var _middle: HBoxContainer
 
 
 func _ready() -> void:
@@ -196,24 +193,14 @@ func _build_game_ui() -> void:
 
 	column.add_child(_build_top_bar())
 
-	# Middle: sidebar + content
-	_middle = HBoxContainer.new()
-	_middle.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_middle.add_theme_constant_override("separation", 0)
-	column.add_child(_middle)
-
-	_sidebar = Sidebar.new()
-	_sidebar.setup(self)
-	_middle.add_child(_sidebar)
-
-	# Content holder with parchment background
+	# Content holder - FULL SCREEN (no sidebar)
 	var content_holder := Control.new()
 	content_holder.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content_holder.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content_holder.clip_contents = true
-	_middle.add_child(content_holder)
+	column.add_child(content_holder)
 
-	# Parchment behind content
+	# Parchment behind content - visible подложка
 	var parchment_bg := Style.view_background()
 	content_holder.add_child(parchment_bg)
 
@@ -439,8 +426,6 @@ func _on_state_changed() -> void:
 	if _res_labels.is_empty():
 		return
 	_refresh_top_bar()
-	if _sidebar and _sidebar.has_method("refresh"):
-		_sidebar.refresh()
 	var v := current_view()
 	if v and v.has_method("refresh"):
 		v.refresh()

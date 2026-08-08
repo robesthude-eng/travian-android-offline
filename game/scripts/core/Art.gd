@@ -127,6 +127,9 @@ static func loading_cover() -> Texture2D:
 
 # --- Sliced assets (promo etc.) ---
 
+static func village_kingdoms_bg() -> Texture2D:
+	return _try_load("res://game/assets/village_portrait_bg.png")
+
 static func village_center_bg() -> Texture2D:
 	# Keep as file (large background) — not in atlas (atlas is 256)
 	var tex := _try_load(BUILDINGS_DIR + "village_center_authentic_travian.png")
