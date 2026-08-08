@@ -128,13 +128,20 @@ func refresh() -> void:
 		var b: Button = _slot_buttons[i]
 		var id: String = slot["id"]
 		var lvl := int(slot["lvl"])
-		var border := Style.PANEL_GOLD_BORDER if lvl > 0 else Color("3a2a14")
-		var fill := Style.PARCHMENT_LIGHT if lvl > 0 else Color("2e2014")
-		if queued.has(i):
-			border = Style.WARN
-			fill = Style.WARN.darkened(0.6)
+		# Clear old level badge
+		for child in b.get_children():
+			if child.name == "LvlBadge":
+				child.queue_free()
 		var is_empty := id == "" or lvl == 0
+		var sb_normal: StyleBoxFlat
+		var sb_hover: StyleBoxFlat
+		var sb_pressed: StyleBoxFlat
 		if is_empty:
+			var border := Color("3a2a14")
+			var fill := Color("2e2014")
+			if queued.has(i):
+				border = Style.WARN
+				fill = Style.WARN.darkened(0.6)
 			b.icon = Art.construction_site() if queued.has(i) else null
 			if queued.has(i):
 				b.text = ""
@@ -145,38 +152,71 @@ func refresh() -> void:
 			if i == T.SLOT_WALL:
 				b.text = "🧱"
 				b.tooltip_text = T.TRIBES[v["tribe"]]["wall_label"]
+			sb_normal = Style.flat(fill, 12 if i != T.SLOT_MAIN else 16, 2, border)
+			sb_normal.shadow_color = Color(0,0,0,0.25)
+			sb_normal.shadow_size = 4
+			sb_hover = Style.flat(fill.lightened(0.12), 12, 2, border.lightened(0.15))
+			sb_pressed = Style.flat(fill.darkened(0.18), 12, 2, border)
 		else:
 			var tex := Art.building(id, lvl)
 			if tex:
 				b.icon = tex
-				b.text = str(lvl)
-				b.add_theme_color_override("font_color", Style.ACCENT_GLOW)
-				# Add shadow for level badge via modulate
+				b.text = ""
 			else:
 				b.icon = null
-				b.text = "%s\n%d" % [T.building(id).get("icon", "🏠"), lvl]
+				b.text = T.building(id).get("icon", "🏠")
 				b.add_theme_color_override("font_color", Style.TEXT)
 			b.tooltip_text = "%s — %d ур." % [T.building(id).get("label", id), lvl]
-			# highlight high levels
-			if lvl >= 10:
-				border = Style.ACCENT
-				fill = Style.PARCHMENT_LIGHT.lightened(0.05)
-
-		# Apply stylebox
-		var sb := Style.flat(fill, 12 if i != T.SLOT_MAIN else 16, 2, border)
-		# add subtle shadow for depth
-		sb.shadow_color = Color(0,0,0,0.25)
-		sb.shadow_size = 4
-		b.add_theme_stylebox_override("normal", sb)
-		b.add_theme_stylebox_override("hover", Style.flat(fill.lightened(0.12), 12, 2, border.lightened(0.15)))
-		b.add_theme_stylebox_override("pressed", Style.flat(fill.darkened(0.18), 12, 2, border))
-
+			# Прозрачный слот — только иконка + тень + бейдж уровня, без белого фона
+			sb_normal = Style.flat(Color(0,0,0,0), 12 if i != T.SLOT_MAIN else 16, 0, Color.TRANSPARENT)
+			sb_normal.shadow_color = Color(0,0,0,0.35)
+			sb_normal.shadow_size = 6
+			sb_normal.shadow_offset = Vector2(2,3)
+			sb_hover = Style.flat(Color(0,0,0,0.06), 12, 0, Color.TRANSPARENT)
+			sb_pressed = Style.flat(Color(0,0,0,0.12), 12, 0, Color.TRANSPARENT)
+			# Бейдж уровня в углу
+			var badge := PanelContainer.new()
+			badge.name = "LvlBadge"
+			badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			var bsb := StyleBoxFlat.new()
+			bsb.bg_color = Style.ACCENT if lvl >= 10 else Color("2e2014")
+			bsb.corner_radius_top_left = 8
+			bsb.corner_radius_top_right = 8
+			bsb.corner_radius_bottom_left = 8
+			bsb.corner_radius_bottom_right = 8
+			bsb.border_color = Style.ACCENT_GLOW if lvl >= 10 else Style.PANEL_GOLD_BORDER
+			bsb.border_width_left = 1
+			bsb.border_width_right = 1
+			bsb.border_width_top = 1
+			bsb.border_width_bottom = 1
+			bsb.content_margin_left = 4
+			bsb.content_margin_right = 4
+			bsb.content_margin_top = 1
+			bsb.content_margin_bottom = 1
+			badge.add_theme_stylebox_override("panel", bsb)
+			var lbl := Label.new()
+			lbl.text = str(lvl)
+			lbl.add_theme_font_size_override("font_size", 11 if i != T.SLOT_MAIN else 13)
+			lbl.add_theme_color_override("font_color", Style.TEXT_DARK if lvl >= 10 else Style.ACCENT_GLOW)
+			lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			badge.add_child(lbl)
+			badge.custom_minimum_size = Vector2(22, 18) if i != T.SLOT_MAIN else Vector2(26, 20)
+			badge.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+			badge.offset_left = -24 if i != T.SLOT_MAIN else -28
+			badge.offset_top = -18 if i != T.SLOT_MAIN else -20
+			badge.offset_right = -4
+			badge.offset_bottom = -4
+			b.add_child(badge)
+		b.add_theme_stylebox_override("normal", sb_normal)
+		b.add_theme_stylebox_override("hover", sb_hover)
+		b.add_theme_stylebox_override("pressed", sb_pressed)
 		if i == T.SLOT_MAIN:
 			b.add_theme_font_size_override("font_size", 14)
 
 	var cp := Sim.culture_rate(v) * G.speed()
 	var slots_free := Sim.expansion_slots(G.state)
-	_summary.text = "Население %d   •   Культура %d (+%d/ч)   •   Слотов: %d\nВсего культуры: %d / %d для следующей деревни" % [
+	_summary.text = "Население %d   •   Культура %d (+%d/ч)   •   Слотов: %d
+Всего культуры: %d / %d для следующей деревни" % [
 		Sim.population(v), int(v["cp"]), int(cp), slots_free,
 		int(Sim.total_culture(G.state)), T.cp_needed(G.village_count())]
 
