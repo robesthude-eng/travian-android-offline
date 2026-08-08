@@ -493,6 +493,12 @@ func _show_village_picker() -> void:
 func _show_settings() -> void:
 	var body := Style.vbox(10)
 
+	# So you can tell which build is on the phone without digging through
+	# GitHub — useful the moment something looks wrong.
+	body.add_child(Style.label("Версия %s" % ProjectSettings.get_setting(
+			"application/config/version", "dev"), Style.FONT_S, Style.TEXT_DIM))
+	body.add_child(Style.separator())
+
 	body.add_child(Style.label("Скорость игры", Style.FONT_M, Style.ACCENT))
 	body.add_child(Style.wrapped(
 		"Умножает добычу, стройку и обучение. Меняется в любой момент.",

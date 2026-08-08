@@ -8,6 +8,8 @@ config_version=5
 
 config/name="Travian Offline"
 config/description="Offline Travian-like strategy with AI opponents"
+; Overwritten by CI with the real build version; kept generic for local runs.
+config/version="0.0.0-dev"
 run/main_scene="res://game/scenes/Main.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 config/icon="res://game/icon.svg"

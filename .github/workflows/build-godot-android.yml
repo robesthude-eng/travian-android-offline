@@ -3,9 +3,13 @@ name: Build Android APK (Godot)
 on:
   push:
     branches: [ main, 'claude/**' ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+
+permissions:
+  contents: write        # needed to publish the release on a tag
 
 env:
   GODOT_VERSION: 4.3
@@ -16,6 +20,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # tags must be present to derive the version base
+
+      # ---------------------------------------------------------------------
+      # Version
+      # ---------------------------------------------------------------------
+      # versionCode is the run number: strictly increasing forever, which is
+      # what Android requires to accept an in-place update.
+      # versionName is cosmetic — the tag on a tag build, otherwise
+      # <latest tag base>.<run number>.
+      - name: Compute version
+        run: |
+          set -euo pipefail
+          CODE="${GITHUB_RUN_NUMBER}"
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            NAME="${GITHUB_REF_NAME#v}"
+          else
+            BASE="$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' | cut -d. -f1,2 || true)"
+            [ -n "$BASE" ] || BASE="1.0"
+            NAME="${BASE}.${CODE}"
+          fi
+          echo "VERSION_CODE=$CODE" >> "$GITHUB_ENV"
+          echo "VERSION_NAME=$NAME" >> "$GITHUB_ENV"
+          echo "APK_NAME=travian-offline-${NAME}.apk" >> "$GITHUB_ENV"
+          echo "Building version $NAME (code $CODE)"
+
+      - name: Stamp the version into the project
+        run: |
+          set -euo pipefail
+          sed -i "s|^version/code=.*|version/code=${VERSION_CODE}|" export_presets.cfg
+          sed -i "s|^version/name=.*|version/name=\"${VERSION_NAME}\"|" export_presets.cfg
+          sed -i "s|^config/version=.*|config/version=\"${VERSION_NAME}\"|" project.godot
+          grep -E '^version/(code|name)=' export_presets.cfg
+          grep -E '^config/version=' project.godot
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -27,9 +65,7 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install Android build tools
-        run: |
-          sdkmanager --install "platform-tools" "build-tools;34.0.0" "platforms;android-34"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+        run: sdkmanager --install "platform-tools" "build-tools;34.0.0" "platforms;android-34"
 
       - name: Cache Godot toolchain
         id: godot-cache
@@ -61,18 +97,44 @@ jobs:
       - name: Add Godot to PATH
         run: echo "$HOME/godot-bin" >> $GITHUB_PATH
 
-      - name: Create debug keystore
+      # ---------------------------------------------------------------------
+      # Signing
+      # ---------------------------------------------------------------------
+      # Android only allows an in-place update when the new APK carries the
+      # SAME signature as the installed one. Generating a keystore per run --
+      # which this workflow used to do -- makes every build look like a
+      # different app and forces an uninstall. The key must therefore be
+      # stable, so it is committed at ci/travian-debug.keystore.
+      #
+      # Set ANDROID_KEYSTORE_BASE64 / _PASSWORD / ANDROID_KEY_ALIAS /
+      # ANDROID_KEY_PASSWORD as repository secrets to sign with a real release
+      # key instead. Switching keys breaks updates from builds signed with the
+      # old one, exactly once.
+      - name: Resolve signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          mkdir -p ~/.android
-          if [ ! -f ~/.android/debug.keystore ]; then
-            keytool -keyalg RSA -genkeypair -alias androiddebugkey \
-              -keypass android -storepass android \
-              -keystore ~/.android/debug.keystore \
-              -dname "CN=Android Debug,O=Android,C=US" -validity 9999 -deststoretype pkcs12
+          mkdir -p "$HOME/.android"
+          if [ -n "${KEYSTORE_B64:-}" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$HOME/.android/signing.keystore"
+            echo "SIGN_ALIAS=${KEY_ALIAS}" >> "$GITHUB_ENV"
+            echo "SIGN_STOREPASS=${KEYSTORE_PASS}" >> "$GITHUB_ENV"
+            echo "SIGN_KEYPASS=${KEY_PASS}" >> "$GITHUB_ENV"
+            echo "Signing with the release key from repository secrets."
+          else
+            cp ci/travian-debug.keystore "$HOME/.android/signing.keystore"
+            echo "SIGN_ALIAS=androiddebugkey" >> "$GITHUB_ENV"
+            echo "SIGN_STOREPASS=android" >> "$GITHUB_ENV"
+            echo "SIGN_KEYPASS=android" >> "$GITHUB_ENV"
+            echo "Signing with the committed debug key (stable across builds)."
           fi
+          echo "SIGN_STORE=$HOME/.android/signing.keystore" >> "$GITHUB_ENV"
 
-      - name: Point Godot at the Android SDK
+      - name: Point Godot at the Android SDK and the signing key
         run: |
           set -euo pipefail
           mkdir -p ~/.config/godot
@@ -81,11 +143,10 @@ jobs:
 
           [resource]
           export/android/android_sdk_path = "${ANDROID_SDK_ROOT}"
-          export/android/debug_keystore = "${HOME}/.android/debug.keystore"
-          export/android/debug_keystore_user = "androiddebugkey"
-          export/android/debug_keystore_pass = "android"
+          export/android/debug_keystore = "${SIGN_STORE}"
+          export/android/debug_keystore_user = "${SIGN_ALIAS}"
+          export/android/debug_keystore_pass = "${SIGN_STOREPASS}"
           EOF
-          cat ~/.config/godot/editor_settings-4.3.tres
 
       - name: Import project assets
         run: |
@@ -114,34 +175,57 @@ jobs:
 
       - name: Export APK
         env:
-          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /home/runner/.android/debug.keystore
-          GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
-          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
+          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: ${{ env.SIGN_STORE }}
+          GODOT_ANDROID_KEYSTORE_DEBUG_USER: ${{ env.SIGN_ALIAS }}
+          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: ${{ env.SIGN_STOREPASS }}
         run: |
           set -euo pipefail
           mkdir -p build
-          godot --headless --export-debug "Android" build/travian-offline.apk
+          godot --headless --export-debug "Android" "build/${APK_NAME}"
           ls -lh build/
 
-      - name: Verify the APK is real
+      - name: Verify the APK
         run: |
           set -euo pipefail
-          test -s build/travian-offline.apk
-          SIZE=$(stat -c%s build/travian-offline.apk)
+          APK="build/${APK_NAME}"
+          test -s "$APK"
+          SIZE=$(stat -c%s "$APK")
           echo "APK size: $((SIZE / 1024 / 1024)) MB"
-          # A template-only APK with no game data would be far smaller than this.
+          # A template-only APK with no game data would be far smaller.
           test "$SIZE" -gt 5000000
-          "$ANDROID_SDK_ROOT/build-tools/34.0.0/aapt" dump badging build/travian-offline.apk | head -5
+
+          BT="$ANDROID_SDK_ROOT/build-tools/34.0.0"
+          "$BT/aapt" dump badging "$APK" | grep -E "^package:|^application-label"
+
+          # The version actually baked into the APK must match what we asked
+          # for, or "update instead of reinstall" silently stops working.
+          BADGE=$("$BT/aapt" dump badging "$APK" | head -1)
+          echo "$BADGE" | grep -q "versionCode='${VERSION_CODE}'"
+          echo "$BADGE" | grep -q "versionName='${VERSION_NAME}'"
+
+          # And it must carry the signature that lets it upgrade in place.
+          echo "--- signer ---"
+          "$BT/apksigner" verify --print-certs "$APK" | grep -E "SHA-256 digest|Signer #1 certificate DN"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: travian-offline-apk-${{ github.run_number }}
-          path: build/travian-offline.apk
+          name: travian-offline-${{ env.VERSION_NAME }}
+          path: build/*.apk
           retention-days: 60
 
-      - name: Attach APK to release on tag
+      - name: Publish release on tag
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          files: build/travian-offline.apk
+          name: Travian Offline ${{ env.VERSION_NAME }}
+          files: build/*.apk
+          generate_release_notes: true
+          body: |
+            Оффлайновая стратегия с ИИ-соперниками.
+
+            **Версия:** `${{ env.VERSION_NAME }}` (versionCode `${{ env.VERSION_CODE }}`)
+
+            Скачай `.apk` ниже и установи. Начиная с этой версии обновления
+            ставятся поверх — удалять предыдущую сборку не нужно, сохранение
+            остаётся на месте.
