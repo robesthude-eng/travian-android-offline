@@ -24,6 +24,10 @@ var current_village_index := 0
 var _autosave_accum := 0.0
 var _llm_accum := 0.0
 var _llm: Node = null
+var _start_offset: Vector2i = Vector2i.ZERO
+
+func set_start_offset(offset: Vector2i) -> void:
+	_start_offset = offset
 
 
 func _ready() -> void:
@@ -68,6 +72,10 @@ func new_game(player_name: String, tribe: String, speed: float) -> void:
 	state = World.new_game(player_name, tribe, speed, seed_value)
 	state["t"] = now
 	state["created"] = now
+	# Apply chosen starting quadrant
+	if _start_offset != Vector2i.ZERO:
+		state["villages"][0]["x"] = _start_offset.x
+		state["villages"][0]["y"] = _start_offset.y
 	# Bots were generated with t=0; move their first turn onto the real clock.
 	for b in state["bots"]:
 		b["next_tick"] = now + float(b["next_tick"])

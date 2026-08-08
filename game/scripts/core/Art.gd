@@ -136,6 +136,9 @@ static func village_center_bg() -> Texture2D:
 	if tex: return tex
 	return _try_load(BUILDINGS_DIR + "village_center_filled_buildings.png")
 
+static func fields_kingdoms_bg() -> Texture2D:
+	return _try_load("res://game/assets/fields_kingdoms_bg.png")
+
 static func resource_fields_bg() -> Texture2D:
 	return _try_load(BUILDINGS_DIR + "resource_fields_authentic_travian.png")
 

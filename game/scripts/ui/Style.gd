@@ -3,21 +3,21 @@ extends RefCounted
 ## Visual style — rich Travian palette with parchment + wood + gold
 ## Every view shares the same language so the game stops looking “позорно”.
 
-const BG := Color("1a0f08")               # almost black wood
-const BG_LIGHT := Color("241a0e")         # lighter wood for gradients
-const PARCHMENT := Color("2e2014")        # view background
-const PARCHMENT_LIGHT := Color("3d2e1a")  # elevated card
-const WOOD_DARK := Color("1e1206")
-const WOOD_MID := Color("2f1e0b")
-const PANEL := Color("2e1d0e")
-const PANEL_LIGHT := Color("3f2d18")
-const PANEL_GOLD_BORDER := Color("7a5a1a")
-const ACCENT := Color("d4a934")           # warm gold
-const ACCENT_DIM := Color("8a6a1e")
-const ACCENT_GLOW := Color("ffd86b")
-const TEXT := Color("f5e6c6")
-const TEXT_DIM := Color("c2b59a")
-const TEXT_DARK := Color("2a1e12")
+const BG := Color("e8f5e9")               # light green beige (Kingdoms grass)
+const BG_LIGHT := Color("f1f8e9")
+const PARCHMENT := Color("ffffff")        # white card
+const PARCHMENT_LIGHT := Color("fff8e1")  # warm light card
+const WOOD_DARK := Color("5d4037")
+const WOOD_MID := Color("8d6e63")
+const PANEL := Color("fff3e0")
+const PANEL_LIGHT := Color("ffecb3")
+const PANEL_GOLD_BORDER := Color("ff8f00")
+const ACCENT := Color("ff6f00")           # bright orange gold (Kingdoms)
+const ACCENT_DIM := Color("e65100")
+const ACCENT_GLOW := Color("ffab40")
+const TEXT := Color("3e2723")
+const TEXT_DIM := Color("6d4c41")
+const TEXT_DARK := Color("3e2723")
 const GOOD := Color("6fbf5e")
 const BAD := Color("d95a4a")
 const WARN := Color("e0a33a")
@@ -354,22 +354,15 @@ static func view_background() -> Control:
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var bg := ColorRect.new()
-	bg.color = PARCHMENT
+	bg.color = Color("f1f8e9") # very light green, like grass
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	holder.add_child(bg)
-	# vignette
+	# subtle vignette
 	var vignette := ColorRect.new()
-	vignette.color = Color(0,0,0,0.12)
+	vignette.color = Color(0,0,0,0.04)
 	vignette.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	holder.add_child(vignette)
-	# top trim
-	var trim := ColorRect.new()
-	trim.color = ACCENT_DIM.darkened(0.4)
-	trim.custom_minimum_size = Vector2(0, 2)
-	trim.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	trim.offset_bottom = 2
-	holder.add_child(trim)
 	return holder
 
 # Card with title + content, used for lists
