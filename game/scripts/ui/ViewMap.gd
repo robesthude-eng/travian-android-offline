@@ -165,7 +165,7 @@ func refresh() -> void:
 		var col := Style.vbox(2)
 		var head := ""
 		if mine:
-			var verb := {"raid": "Набег", "attack": "Атака", "scout": "Разведка",
+			var verb: String = {"raid": "Набег", "attack": "Атака", "scout": "Разведка",
 				"settle": "Поселенцы", "reinforce": "Подкрепление"}.get(String(m["kind"]), "Поход")
 			if bool(m.get("returning", false)):
 				verb = "Возвращение"

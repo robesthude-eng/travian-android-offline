@@ -52,6 +52,14 @@ func near(a: float, b: float, eps := 1.0) -> bool:
 	return absf(a - b) <= eps
 
 
+## A world with no rivals. Tests that measure one mechanic in isolation use
+## this, so a bot raid cannot delete the garrison being counted.
+func solo(tribe: String, seed_value: int, speed := 1.0) -> Dictionary:
+	var s := World.new_game("Тест", tribe, speed, seed_value)
+	s["bots"] = []
+	return s
+
+
 # ---------------------------------------------------------------------------
 
 func _test_tables() -> void:
@@ -197,7 +205,7 @@ func _test_new_game() -> void:
 
 
 func _test_production_and_caps() -> void:
-	var s := World.new_game("Тест", T.TRIBE_ROMANS, 1.0, 7)
+	var s := solo(T.TRIBE_ROMANS, 7)
 	var v: Dictionary = s["villages"][0]
 
 	var prod := Sim.production(s, v)
@@ -259,7 +267,7 @@ func _test_offline_equals_online() -> void:
 
 
 func _test_build_queue() -> void:
-	var s := World.new_game("Тест", T.TRIBE_ROMANS, 1.0, 5)
+	var s := solo(T.TRIBE_ROMANS, 5)
 	var v: Dictionary = s["villages"][0]
 	v["res"] = [5000.0, 5000.0, 5000.0, 5000.0]
 
@@ -277,20 +285,20 @@ func _test_build_queue() -> void:
 	check(v["build_queue"].is_empty(), "queue drained")
 
 	# Non-Romans get a single lane.
-	var g := World.new_game("Т", T.TRIBE_GAULS, 1.0, 5)
+	var g := solo(T.TRIBE_GAULS, 5)
 	var gv: Dictionary = g["villages"][0]
 	gv["res"] = [5000.0, 5000.0, 5000.0, 5000.0]
 	check(Actions.upgrade_field(g, gv, 0), "gaul field queued")
 	check(not Actions.build(g, gv, 6, "cranny"), "gauls have one queue")
 
 	# Requirements are enforced.
-	var s2 := World.new_game("Т", T.TRIBE_ROMANS, 1.0, 5)
+	var s2 := solo(T.TRIBE_ROMANS, 5)
 	var v2: Dictionary = s2["villages"][0]
 	v2["res"] = [99999.0, 99999.0, 99999.0, 99999.0]
 	check(not Actions.build(s2, v2, 7, "workshop"), "workshop needs an academy")
 
 	# Cancelling refunds.
-	var s3 := World.new_game("Т", T.TRIBE_ROMANS, 1.0, 5)
+	var s3 := solo(T.TRIBE_ROMANS, 5)
 	var v3: Dictionary = s3["villages"][0]
 	v3["res"] = [5000.0, 5000.0, 5000.0, 5000.0]
 	var wood_before := float(v3["res"][0])
@@ -301,7 +309,7 @@ func _test_build_queue() -> void:
 
 
 func _test_training() -> void:
-	var s := World.new_game("Тест", T.TRIBE_ROMANS, 1.0, 11)
+	var s := solo(T.TRIBE_ROMANS, 11)
 	var v: Dictionary = s["villages"][0]
 	v["res"] = [99999.0, 99999.0, 99999.0, 99999.0]
 	v["slots"][6] = {"id": "barracks", "lvl": 3}
@@ -322,7 +330,7 @@ func _test_training() -> void:
 
 
 func _test_starvation() -> void:
-	var s := World.new_game("Тест", T.TRIBE_ROMANS, 1.0, 13)
+	var s := solo(T.TRIBE_ROMANS, 13)
 	var v: Dictionary = s["villages"][0]
 	v["troops"] = {"legionnaire": 3000}
 	v["res"][T.CR] = 50.0
@@ -337,7 +345,12 @@ func _test_starvation() -> void:
 
 func _test_movement_and_camp() -> void:
 	var s := World.new_game("Тест", T.TRIBE_ROMANS, 1.0, 17)
+	# Isolate the mechanic under test: no rivals raiding the garrison mid-run,
+	# and enough farmland that 800 legionnaires do not starve before they return.
+	s["bots"] = []
 	var v: Dictionary = s["villages"][0]
+	for i in range(18):
+		v["fields"][i] = 12
 	v["troops"] = {"legionnaire": 800}
 
 	# Find a weak camp to farm.
@@ -402,7 +415,7 @@ func _test_bots_long_run() -> void:
 
 
 func _test_settling_rules() -> void:
-	var s := World.new_game("Тест", T.TRIBE_ROMANS, 1.0, 29)
+	var s := solo(T.TRIBE_ROMANS, 29)
 	var v: Dictionary = s["villages"][0]
 
 	check(not Actions.can_settle(s, v)["ok"], "cannot settle on day one")
@@ -431,7 +444,7 @@ func _test_settling_rules() -> void:
 
 
 func _test_save_round_trip() -> void:
-	var s := World.new_game("Тест", T.TRIBE_GERMANS, 3.0, 31)
+	var s := solo(T.TRIBE_GERMANS, 31, 3.0)
 	var v: Dictionary = s["villages"][0]
 	v["troops"] = {"clubswinger": 42, "spearman": 7}
 	v["res"] = [111.0, 222.0, 333.0, 444.0]
@@ -459,7 +472,7 @@ func _test_save_round_trip() -> void:
 
 
 func _test_clock_tampering() -> void:
-	var s := World.new_game("Тест", T.TRIBE_ROMANS, 1.0, 37)
+	var s := solo(T.TRIBE_ROMANS, 37)
 	s["t"] = 1000.0
 	var v: Dictionary = s["villages"][0]
 	v["res"] = [0.0, 0.0, 0.0, 0.0]
@@ -472,7 +485,7 @@ func _test_clock_tampering() -> void:
 			"clock still follows the device")
 
 	# Winding it backwards must not corrupt anything.
-	var s2 := World.new_game("Тест", T.TRIBE_ROMANS, 1.0, 41)
+	var s2 := solo(T.TRIBE_ROMANS, 41)
 	s2["t"] = 100000.0
 	var before := float(s2["villages"][0]["res"][0])
 	var gained := Sim.catch_up(s2, 5000.0)

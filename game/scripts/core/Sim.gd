@@ -373,25 +373,41 @@ static func _accrue(state: Dictionary, dt: float) -> void:
 
 ## If a village is running a crop deficit, work out when the granary empties so
 ## the famine becomes a scheduled event rather than a surprise.
-static func _schedule_starvation(state: Dictionary, v: Dictionary) -> void:
+##
+## A pending famine is never rescheduled. `_accrue` runs on every interval, so
+## recomputing an already-scheduled time would push the event permanently into
+## the future and the village would never actually starve. Only `_starve` (via
+## `force`) and a village that has recovered may move it.
+static func _schedule_starvation(state: Dictionary, v: Dictionary, force := false) -> void:
 	var net := crop_net(state, v)
 	if net >= 0.0:
 		v["starve_at"] = -1.0
 		return
+	var now := float(state["t"])
+	if not force and float(v.get("starve_at", -1.0)) > now:
+		return
 	var speed: float = float(state.get("speed", 1.0))
 	var stock: float = float(v["res"][T.CR])
 	if stock <= 0.5:
-		v["starve_at"] = float(state["t"]) + STARVE_KILL_INTERVAL
+		v["starve_at"] = now + STARVE_KILL_INTERVAL
 		return
-	var hours_left := stock / (-net * speed)
-	v["starve_at"] = float(state["t"]) + hours_left * 3600.0
+	v["starve_at"] = now + stock / (-net * speed) * 3600.0
 
 
 static func _starve(state: Dictionary, v: Dictionary) -> void:
-	## Kill the cheapest-to-replace troops until the village feeds itself again.
+	## Kill troops until the village can feed itself again, cheapest first.
+	##
+	## The deficit is measured once and drawn down as units die, rather than
+	## recomputing the whole village balance per casualty — a starving army can
+	## be thousands strong.
+	var deficit := -crop_net(state, v)
+	if deficit <= 0.0:
+		v["starve_at"] = -1.0
+		return
+
 	var killed := {}
 	var guard := 0
-	while crop_net(state, v) < 0.0 and troops_count(v["troops"]) > 0 and guard < 500:
+	while deficit > 0.0 and troops_count(v["troops"]) > 0 and guard < 100000:
 		guard += 1
 		var victim := ""
 		var worst := -1.0
@@ -401,8 +417,8 @@ static func _starve(state: Dictionary, v: Dictionary) -> void:
 			var u: Dictionary = T.unit(id)
 			if u.is_empty():
 				continue
-			# Prefer eating a lot while costing little.
-			var score: float = float(u["eat"]) / max(1.0, T.res_sum(u["cost"]) / 1000.0)
+			# Prefer the units that eat most per resource invested in them.
+			var score: float = float(u["eat"]) / maxf(1.0, T.res_sum(u["cost"]) / 1000.0)
 			if score > worst:
 				worst = score
 				victim = id
@@ -410,8 +426,10 @@ static func _starve(state: Dictionary, v: Dictionary) -> void:
 			break
 		v["troops"][victim] = int(v["troops"][victim]) - 1
 		killed[victim] = int(killed.get(victim, 0)) + 1
+		deficit -= float(T.unit(victim)["eat"])
 		if int(v["troops"][victim]) <= 0:
 			v["troops"].erase(victim)
+
 	if not killed.is_empty():
 		add_report(state, {
 			"type": "famine",
@@ -420,7 +438,7 @@ static func _starve(state: Dictionary, v: Dictionary) -> void:
 			"troops": killed,
 			"text": "Зерно кончилось. Погибло войск: %d." % troops_count(killed),
 		})
-	_schedule_starvation(state, v)
+	_schedule_starvation(state, v, true)
 
 
 static func _fire_events(state: Dictionary, t: float) -> void:

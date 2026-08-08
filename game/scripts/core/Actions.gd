@@ -178,9 +178,11 @@ static func cancel_build(state: Dictionary, v: Dictionary, queue_index: int) -> 
 		cost = T.field_cost(int(T.FIELD_LAYOUT[int(item["index"])]["res"]), int(item["level"]))
 	else:
 		cost = T.building_cost(item["id"], int(item["level"]))
+	# Refund exactly what was paid: cancelling must be the inverse of building.
+	# Clamping here could destroy resources the player already had, and normal
+	# accrual trims any overflow on the next tick anyway.
 	for r in range(4):
-		var cap := Sim.capacity_for(v, r)
-		v["res"][r] = min(cap, float(v["res"][r]) + cost[r])
+		v["res"][r] = float(v["res"][r]) + cost[r]
 	v["build_queue"].remove_at(queue_index)
 	return true
 
