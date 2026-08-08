@@ -1,30 +1,33 @@
 extends Control
 
-## Battle reports, build notifications, famine warnings and rival messages.
+## Reports — parchment cards with accent colors
 
 const T := preload("res://game/scripts/core/Tables.gd")
 const Style := preload("res://game/scripts/ui/Style.gd")
+const Art := preload("res://game/scripts/core/Art.gd")
 
 var _root: Control
 var _list: VBoxContainer
 var _last_count := -1
 
-
 func setup(root: Control) -> void:
 	_root = root
-
 
 func rebuild() -> void:
 	for c in get_children():
 		c.queue_free()
-	var col := Style.vbox(8)
-	col.add_child(Style.label("Вести", Style.FONT_L, Style.ACCENT))
-	_list = Style.vbox(6)
+	var col := Style.vbox(12)
+	var header := Style.parchment(14)
+	var head_inner := Style.vbox(4)
+	head_inner.add_child(Style.label("Вести", Style.FONT_L, Style.ACCENT))
+	head_inner.add_child(Style.wrapped("Битвы, постройка, голод и послания соперников. Всё, что случилось с тобой.", Style.FONT_XXS, Style.TEXT_DIM))
+	header.add_child(Style.margin(head_inner, 14))
+	col.add_child(header)
+	_list = Style.vbox(8)
 	col.add_child(_list)
 	add_child(Style.scroll(Style.margin(col, 12)))
 	_last_count = -1
 	refresh()
-
 
 func refresh() -> void:
 	if _list == null:
@@ -33,44 +36,69 @@ func refresh() -> void:
 	if reports.size() == _last_count:
 		return
 	_last_count = reports.size()
-
 	for c in _list.get_children():
 		c.queue_free()
-
 	if reports.is_empty():
-		_list.add_child(Style.label("Пока тихо.", Style.FONT_S, Style.TEXT_DIM))
+		var empty := Style.parchment(12)
+		empty.add_child(Style.margin(Style.label("Пока тихо. Скоро здесь будут донесения.", Style.FONT_S, Style.TEXT_DIM), 12))
+		_list.add_child(empty)
 		return
-
-	for r in reports:
-		_list.add_child(_report_card(r))
-
+	for idx in range(reports.size()-1, -1, -1):
+		_list.add_child(_report_card(reports[idx]))
+		if _list.get_child_count() >= 40:
+			break
 
 func _report_card(r: Dictionary) -> Control:
 	var kind := String(r.get("type", "info"))
-	var accent := Style.PANEL_LIGHT
+	var accent := Style.PARCHMENT_LIGHT
+	var icon := "📜"
 	match kind:
 		"battle":
 			var won := bool(r.get("won", false))
 			var mine := bool(r.get("player_is_attacker", true))
-			# A win for the attacker is bad news when the attacker is not you.
 			accent = Color("2f4a2a") if won == mine else Color("4a2a2a")
-		"famine", "incoming":
+			icon = "⚔️" if won == mine else "💥"
+		"famine":
 			accent = Color("4a3a1a")
+			icon = "💀"
+		"incoming":
+			accent = Color("4a2424")
+			icon = "⚠️"
 		"message":
 			accent = Color("3a2a4a")
-		"settle", "build", "training":
+			icon = "💬"
+		"settle":
 			accent = Color("2a3a4a")
+			icon = "🚩"
+		"build":
+			accent = Color("2a3a2a")
+			icon = "🏗️"
+		"training":
+			accent = Color("2a2414")
+			icon = "🎖️"
 
 	var panel := Style.panel(accent, 12, 1)
-	var col := Style.vbox(4)
+	# give accent border for battles
+	if kind == "battle":
+		var won := bool(r.get("won", false))
+		var mine := bool(r.get("player_is_attacker", true))
+		var border_col := Style.GOOD if won == mine else Style.BAD
+		panel.add_theme_stylebox_override("panel", Style.flat(accent, 12, 1, border_col))
 
-	var head := Style.hbox(6)
-	head.add_child(Style.wrapped(String(r.get("title", "")), Style.FONT_M))
-	col.add_child(head)
-
+	var col := Style.vbox(6)
+	var head := Style.hbox(8)
+	var icon_box := Style.panel(Style.WOOD_DARK, 8, 0)
+	icon_box.custom_minimum_size = Vector2(36,36)
+	icon_box.add_child(Style.label(icon, Style.FONT_M, Style.TEXT))
+	head.add_child(icon_box)
+	var title_col := Style.vbox(1)
+	title_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_col.add_child(Style.label(String(r.get("title", "")), Style.FONT_M, Style.TEXT))
 	var when := float(r.get("t", 0.0))
 	var ago := float(G.state["t"]) - when
-	col.add_child(Style.label("%s назад" % G.fmt_time(ago), Style.FONT_S, Style.TEXT_DIM))
+	title_col.add_child(Style.label("%s назад" % G.fmt_time(ago), Style.FONT_XXS, Style.TEXT_DIM))
+	head.add_child(title_col)
+	col.add_child(head)
 
 	var text := String(r.get("text", ""))
 	if text != "":
@@ -81,16 +109,23 @@ func _report_card(r: Dictionary) -> Control:
 		var sent: Dictionary = r.get("att_sent", {})
 		var att_loss: Dictionary = r.get("att_losses", {})
 		var def_loss: Dictionary = r.get("def_losses", {})
-		col.add_child(Style.wrapped("Отправлено: %s" % _troops(sent), Style.FONT_S))
-		col.add_child(Style.wrapped("Потери атакующего: %s" % _troops(att_loss),
-				Style.FONT_S, Style.BAD))
-		col.add_child(Style.wrapped("Потери защитника: %s" % _troops(def_loss),
-				Style.FONT_S, Style.GOOD))
+		# show loot prominently
 		var loot: Array = r.get("loot", [0, 0, 0, 0])
 		if _res_sum(loot) > 0:
-			col.add_child(Style.wrapped("Добыча: %s" % _res(loot), Style.FONT_S, Style.ACCENT))
+			var loot_card := Style.panel(Color("2a2414"), 8, 1)
+			loot_card.add_theme_stylebox_override("panel", Style.flat(Color("2a2414"), 8, 1, Style.ACCENT_DIM))
+			var loot_col := Style.vbox(2)
+			loot_col.add_child(Style.label("Добыча:", Style.FONT_XXS, Style.ACCENT))
+			loot_col.add_child(Style.label(_res(loot), Style.FONT_S, Style.GOOD))
+			loot_card.add_child(Style.margin(loot_col, 8))
+			col.add_child(loot_card)
+		col.add_child(Style.wrapped("Отправлено: %s" % _troops(sent), Style.FONT_XXS, Style.TEXT_DIM))
+		col.add_child(Style.wrapped("Потери атак.: %s" % _troops(att_loss),
+				Style.FONT_XXS, Style.BAD))
+		col.add_child(Style.wrapped("Потери защит.: %s" % _troops(def_loss),
+				Style.FONT_XXS, Style.GOOD))
 		if int(r.get("xp", 0)) > 0:
-			col.add_child(Style.label("Герой получил %d опыта" % int(r["xp"]),
+			col.add_child(Style.label("Герой +%d опыта" % int(r["xp"]),
 					Style.FONT_S, Style.ACCENT))
 		if String(r.get("item", "")) != "":
 			var it: Dictionary = T.HERO_ITEMS.get(String(r["item"]), {})
@@ -98,16 +133,15 @@ func _report_card(r: Dictionary) -> Control:
 				col.add_child(Style.label("Найдено: %s %s" % [it["icon"], it["label"]],
 						Style.FONT_S, Style.ACCENT))
 		if int(r.get("wall_damage", 0)) > 0:
-			col.add_child(Style.label("Стена разрушена на %d ур." % int(r["wall_damage"]),
+			col.add_child(Style.label("Стена −%d ур." % int(r["wall_damage"]),
 					Style.FONT_S, Style.WARN))
 	elif kind == "famine" or kind == "training" or kind == "reinforce":
 		var troops: Dictionary = r.get("troops", {})
 		if not troops.is_empty():
 			col.add_child(Style.wrapped(_troops(troops), Style.FONT_S))
 
-	panel.add_child(col)
+	panel.add_child(Style.margin(col, 12))
 	return panel
-
 
 func _troops(troops: Dictionary) -> String:
 	if troops.is_empty():
@@ -118,14 +152,12 @@ func _troops(troops: Dictionary) -> String:
 		parts.append("%s ×%d" % [u.get("label", id), int(troops[id])])
 	return ", ".join(parts)
 
-
 func _res(res: Array) -> String:
 	var parts: Array = []
 	for r in range(4):
 		if float(res[r]) > 0.0:
 			parts.append("%s%d" % [T.RES_ICONS[r], int(res[r])])
 	return " ".join(parts) if not parts.is_empty() else "ничего"
-
 
 func _res_sum(res: Array) -> float:
 	var total := 0.0
