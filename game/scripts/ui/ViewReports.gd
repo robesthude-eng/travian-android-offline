@@ -100,6 +100,18 @@ func _report_card(r: Dictionary) -> Control:
 	head.add_child(title_col)
 	col.add_child(head)
 
+	# Battle header art
+	if kind == "battle":
+		var battle_tex := Art.battle_report_icon()
+		if battle_tex:
+			var tr := Style.texture(battle_tex, Vector2(0, 96))
+			tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+			tr.custom_minimum_size = Vector2(0, 96)
+			tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			var frame := Style.panel(Color.BLACK, 8, 0)
+			frame.add_child(tr)
+			col.add_child(frame)
+
 	var text := String(r.get("text", ""))
 	if text != "":
 		col.add_child(Style.wrapped(text, Style.FONT_S, Style.TEXT_DIM))
@@ -116,7 +128,14 @@ func _report_card(r: Dictionary) -> Control:
 			loot_card.add_theme_stylebox_override("panel", Style.flat(Color("2a2414"), 8, 1, Style.ACCENT_DIM))
 			var loot_col := Style.vbox(2)
 			loot_col.add_child(Style.label("Добыча:", Style.FONT_XXS, Style.ACCENT))
-			loot_col.add_child(Style.label(_res(loot), Style.FONT_S, Style.GOOD))
+			var loot_row := Style.hbox(10)
+			for rr in range(4):
+				if float(loot[rr]) > 0:
+					var cell := Style.hbox(3)
+					cell.add_child(Style.res_icon_texture(rr, 18))
+					cell.add_child(Style.label("%d" % int(loot[rr]), Style.FONT_S, Style.GOOD))
+					loot_row.add_child(cell)
+			loot_col.add_child(loot_row)
 			loot_card.add_child(Style.margin(loot_col, 8))
 			col.add_child(loot_card)
 		col.add_child(Style.wrapped("Отправлено: %s" % _troops(sent), Style.FONT_XXS, Style.TEXT_DIM))

@@ -32,6 +32,7 @@ const FONT_XL := 26
 const FONT_XXS := 11
 
 const T := preload("res://game/scripts/core/Tables.gd")
+const Art := preload("res://game/scripts/core/Art.gd")
 
 # ---------------------------------------------------------------------------
 # Core boxes
@@ -189,28 +190,68 @@ static func nav_button(icon_tex: Texture2D, label: String, active: bool) -> Butt
 	b.add_theme_color_override("font_hover_color", TEXT if not active else TEXT_DARK)
 	return b
 
-# Circular icon for resources (colored dot with emoji)
+# Circular icon for resources — now uses sliced promo textures (128px circular)
 static func res_badge(res: int, size: int = 28) -> Control:
-	var holder := PanelContainer.new()
+	var tex := Art.resource_icon(res)
+	if tex != null:
+		var tr := TextureRect.new()
+		tr.texture = tex
+		tr.custom_minimum_size = Vector2(size, size)
+		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# wrap in panel for circular clip + border
+		var holder := PanelContainer.new()
+		holder.custom_minimum_size = Vector2(size, size)
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color.WHITE
+		sb.corner_radius_top_left = size/2
+		sb.corner_radius_top_right = size/2
+		sb.corner_radius_bottom_left = size/2
+		sb.corner_radius_bottom_right = size/2
+		sb.border_color = RES_COLORS[res].lightened(0.15)
+		sb.border_width_left = 1
+		sb.border_width_right = 1
+		sb.border_width_top = 1
+		sb.border_width_bottom = 1
+		sb.content_margin_left = 1
+		sb.content_margin_right = 1
+		sb.content_margin_top = 1
+		sb.content_margin_bottom = 1
+		holder.add_theme_stylebox_override("panel", sb)
+		holder.add_child(tr)
+		return holder
+	# fallback old emoji
+	var holder2 := PanelContainer.new()
 	var c := RES_COLORS[res].darkened(0.2)
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = c
-	sb.corner_radius_top_left = size/2
-	sb.corner_radius_top_right = size/2
-	sb.corner_radius_bottom_left = size/2
-	sb.corner_radius_bottom_right = size/2
-	sb.border_color = RES_COLORS[res].lightened(0.2)
-	sb.border_width_left = 1
-	sb.border_width_right = 1
-	sb.border_width_top = 1
-	sb.border_width_bottom = 1
-	holder.add_theme_stylebox_override("panel", sb)
-	holder.custom_minimum_size = Vector2(size, size)
+	var sb2 := StyleBoxFlat.new()
+	sb2.bg_color = c
+	sb2.corner_radius_top_left = size/2
+	sb2.corner_radius_top_right = size/2
+	sb2.corner_radius_bottom_left = size/2
+	sb2.corner_radius_bottom_right = size/2
+	sb2.border_color = RES_COLORS[res].lightened(0.2)
+	sb2.border_width_left = 1
+	sb2.border_width_right = 1
+	sb2.border_width_top = 1
+	sb2.border_width_bottom = 1
+	holder2.add_theme_stylebox_override("panel", sb2)
+	holder2.custom_minimum_size = Vector2(size, size)
 	var l := label(RES_ICONS[res], 12, Color.WHITE)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	holder.add_child(l)
-	return holder
+	holder2.add_child(l)
+	return holder2
+
+static func res_icon_texture(res: int, size: int = 24) -> TextureRect:
+	var tex := Art.resource_icon(res)
+	var tr := TextureRect.new()
+	tr.texture = tex
+	tr.custom_minimum_size = Vector2(size, size)
+	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return tr
 
 # ---------------------------------------------------------------------------
 # Layout helpers
@@ -280,17 +321,23 @@ static func texture(tex: Texture2D, size: Vector2) -> TextureRect:
 	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return tr
 
-# Cost strip: “🪵 120  🧱 100  ⛏️ 150  🌾 30”, red where unaffordable.
+# Cost strip — now with real 24px resource icons + number, red where unaffordable
 static func cost_row(cost: Array, have: Array = []) -> HBoxContainer:
 	var row := hbox(10)
 	for r in range(4):
 		if float(cost[r]) <= 0.0:
 			continue
 		var affordable := have.is_empty() or float(have[r]) >= float(cost[r])
-		var l := label("%s %d" % [T.RES_ICONS[r], int(cost[r])], FONT_S,
-				TEXT if affordable else BAD)
-		row.add_child(l)
+		var cell := hbox(3)
+		var icon := res_icon_texture(r, 18)
+		cell.add_child(icon)
+		var l := label("%d" % int(cost[r]), FONT_S, TEXT if affordable else BAD)
+		cell.add_child(l)
+		row.add_child(cell)
 	return row
+
+static func cost_row_with_icons(cost: Array, have: Array = []) -> HBoxContainer:
+	return cost_row(cost, have)
 
 static func separator() -> HSeparator:
 	var s := HSeparator.new()

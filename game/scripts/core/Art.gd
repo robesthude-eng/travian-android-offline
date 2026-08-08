@@ -70,7 +70,10 @@ static func app_icon() -> Texture2D:
 static func loading_cover() -> Texture2D:
 	return _try_load(UI_DIR + "loading_screen_cover_1080x1920.png")
 
-# --- New helpers for beautiful UI ---
+# --- New helpers for beautiful UI — all from sliced assets ---
+
+const ICONS_DIR := "res://game/assets/icons/"
+const HERO_ASSETS_DIR := "res://game/assets/hero/"
 
 static func village_center_bg() -> Texture2D:
 	var tex := _try_load(BUILDINGS_DIR + "village_center_authentic_travian.png")
@@ -81,20 +84,49 @@ static func resource_fields_bg() -> Texture2D:
 	return _try_load(BUILDINGS_DIR + "resource_fields_authentic_travian.png")
 
 static func field_icon(res: int) -> Texture2D:
-	# Map resource to icon building that represents it
 	match res:
-		0: return _try_load(BUILDINGS_DIR + "11_Sawmill.png")           # wood
-		1: return _try_load(BUILDINGS_DIR + "12_Brickyard.png")         # clay
-		2: return _try_load(BUILDINGS_DIR + "13_Iron_Foundry.png")      # iron
-		3: return _try_load(BUILDINGS_DIR + "14_Grain_Mill.png")        # crop
+		0: return _try_load(BUILDINGS_DIR + "11_Sawmill.png")
+		1: return _try_load(BUILDINGS_DIR + "12_Brickyard.png")
+		2: return _try_load(BUILDINGS_DIR + "13_Iron_Foundry.png")
+		3: return _try_load(BUILDINGS_DIR + "14_Grain_Mill.png")
 		_: return null
 
-static func resource_big_icon(res: int) -> Texture2D:
-	# Try to extract from promo sheet, fallback to field icon
-	var p := _try_load(UI_DIR + "promo_icon_set_resources.png")
-	if p:
-		return p
+# Sliced circular icons from promo_icon_set_resources.png (128x128)
+static func resource_icon(res: int) -> Texture2D:
+	var path := ICONS_DIR + "res_%d.png" % res
+	var tex := _try_load(path)
+	if tex: return tex
+	# fallback to old field icon if sliced not yet generated
 	return field_icon(res)
+
+static func resource_big_icon(res: int) -> Texture2D:
+	return resource_icon(res)
+
+static func merchant_cart_icon() -> Texture2D:
+	return _try_load(ICONS_DIR + "merchant_cart.png")
+
+static func battle_report_icon() -> Texture2D:
+	return _try_load(ICONS_DIR + "battle_report_win_lose.png")
+
+static func nature_troops_icon() -> Texture2D:
+	return _try_load(ICONS_DIR + "nature_troops_rats_spiders.png")
+
+static func oasis_icon_small() -> Texture2D:
+	return _try_load(ICONS_DIR + "oasis_bonus.png")
+
+static func hero_equip_icon(slot: String) -> Texture2D:
+	var map := {"helmet":0, "armor":1, "weapon":2, "shield":3, "boots":4, "horse":5}
+	var idx: int = map.get(slot, -1)
+	if idx < 0: return null
+	return _try_load(HERO_ASSETS_DIR + "equip_%d.png" % idx)
+
+static func hero_equip_icon_by_id(item_id: String) -> Texture2D:
+	# Map item_id to slot-equivalent icon via T.HERO_ITEMS
+	var it: Dictionary = T.HERO_ITEMS.get(item_id, {})
+	var slot: String = String(it.get("slot", ""))
+	if slot != "":
+		return hero_equip_icon(slot)
+	return null
 
 static func map_tile_for(kind: String) -> Texture2D:
 	match kind:

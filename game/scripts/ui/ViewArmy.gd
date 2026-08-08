@@ -77,9 +77,15 @@ func rebuild() -> void:
 		var trade_card := Style.parchment(12)
 		var trade_inner := Style.vbox(6)
 		trade_inner.add_child(Style.label("Торговля", Style.FONT_M, Style.ACCENT))
-		var trade := Style.button("🚚 Отправить ресурсы в другую деревню", Style.FONT_M, false)
+		var trade_row := Style.hbox(8)
+		var cart_tex := Art.merchant_cart_icon()
+		if cart_tex:
+			trade_row.add_child(Style.texture(cart_tex, Vector2(72,48)))
+		var trade := Style.button("Отправить ресурсы в другую деревню", Style.FONT_M, false)
+		trade.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		trade.pressed.connect(_open_trade)
-		trade_inner.add_child(trade)
+		trade_row.add_child(trade)
+		trade_inner.add_child(trade_row)
 		trade_card.add_child(Style.margin(trade_inner, 12))
 		col.add_child(trade_card)
 
@@ -115,13 +121,7 @@ func _unit_row(v: Dictionary, unit_id: String) -> Control:
 	info.add_child(Style.label("⚔%d 🛡%d/%d  🐎%d  🎒%d  🌾%d" % [
 		int(u["atk"]), int(u["di"]), int(u["dc"]), int(u["spd"]),
 		int(u["carry"]), int(u["eat"])], Style.FONT_XXS, Style.TEXT_DIM))
-	# cost row with small icons
-	var cost_row := Style.hbox(6)
-	for r in range(4):
-		if float(u["cost"][r]) > 0:
-			var affordable := float(v["res"][r]) >= float(u["cost"][r])
-			cost_row.add_child(Style.label("%s%d" % [T.RES_ICONS[r], int(u["cost"][r])], Style.FONT_XXS, Style.TEXT if affordable else Style.BAD))
-	info.add_child(cost_row)
+	info.add_child(Style.cost_row(u["cost"], v["res"]))
 	if not check["ok"] and String(check["reason"]) != "":
 		info.add_child(Style.label(String(check["reason"]), Style.FONT_XXS, Style.BAD))
 	row.add_child(info)
@@ -243,6 +243,17 @@ func refresh() -> void:
 func _open_trade() -> void:
 	var v := G.village()
 	var body := Style.vbox(8)
+	# merchant header with art
+	var head := Style.hbox(8)
+	var cart_tex := Art.merchant_cart_icon()
+	if cart_tex:
+		head.add_child(Style.texture(cart_tex, Vector2(96,64)))
+	var head_col := Style.vbox(2)
+	head_col.add_child(Style.label("Караван", Style.FONT_M, Style.ACCENT))
+	head_col.add_child(Style.wrapped("Торговцы возят ресурсы между твоими деревнями. Вместимость и скорость зависят от рынка.", Style.FONT_XXS, Style.TEXT_DIM))
+	head.add_child(head_col)
+	body.add_child(head)
+	body.add_child(Style.separator())
 	var spins := []
 	for r in range(4):
 		var row := Style.hbox(8)

@@ -103,17 +103,23 @@ func rebuild() -> void:
 	for slot: String in T.HERO_EQUIP_SLOTS:
 		var panel := Style.panel(Style.PARCHMENT_LIGHT, 10, 1)
 		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		panel.custom_minimum_size = Vector2(0, 64)
+		panel.custom_minimum_size = Vector2(0, 84)
 		var inner := Style.vbox(4)
+		var tex := Art.hero_equip_icon(slot)
+		if tex:
+			var img := Style.texture(tex, Vector2(64,64))
+			img.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			if String(h["equip"].get(slot,"")) == "":
+				img.modulate = Color(1,1,1,0.35)
+			inner.add_child(img)
 		var equipped: String = String(h["equip"].get(slot, ""))
 		if equipped == "":
 			inner.add_child(Style.label(_slot_label(slot), Style.FONT_S, Style.TEXT_DIM))
 			inner.add_child(Style.label("пусто", Style.FONT_XXS, Style.TEXT_DIM))
-			var hint := Style.label("—", Style.FONT_XXS, Style.ACCENT_DIM)
-			inner.add_child(hint)
 		else:
 			var it: Dictionary = T.HERO_ITEMS[equipped]
-			inner.add_child(Style.label("%s %s" % [it["icon"], it["label"]], Style.FONT_S, Style.ACCENT))
+			# show both art and label
+			inner.add_child(Style.label(String(it.get("label", equipped)), Style.FONT_S, Style.ACCENT))
 			inner.add_child(Style.label(_item_effect(it), Style.FONT_XXS, Style.GOOD))
 			var off := Style.outline_button("Снять", Style.FONT_S)
 			off.custom_minimum_size = Vector2(0, 28)
@@ -123,7 +129,7 @@ func rebuild() -> void:
 				G.save()
 				rebuild())
 			inner.add_child(off)
-		panel.add_child(Style.margin(inner, 8))
+		panel.add_child(Style.margin(inner, 6))
 		grid.add_child(panel)
 	equip_inner.add_child(grid)
 	equip_card.add_child(Style.margin(equip_inner, 12))
@@ -149,8 +155,12 @@ func rebuild() -> void:
 				continue
 			var row := Style.hbox(8)
 			var icon_box := Style.panel(Style.PARCHMENT_LIGHT, 8, 1)
-			icon_box.custom_minimum_size = Vector2(44,44)
-			icon_box.add_child(Style.label(it.get("icon","🎁"), Style.FONT_L, Style.ACCENT))
+			icon_box.custom_minimum_size = Vector2(52,52)
+			var eq_tex := Art.hero_equip_icon_by_id(item_id)
+			if eq_tex:
+				icon_box.add_child(Style.texture(eq_tex, Vector2(48,48)))
+			else:
+				icon_box.add_child(Style.label(it.get("icon","🎁"), Style.FONT_L, Style.ACCENT))
 			row.add_child(icon_box)
 			var info := Style.vbox(2)
 			info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
