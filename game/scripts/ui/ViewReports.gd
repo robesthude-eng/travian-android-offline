@@ -14,7 +14,7 @@ func setup(root: Control) -> void:
 	_root = root
 
 func rebuild() -> void:
-	for c in get_children():
+	for c: Node in get_children():
 		c.queue_free()
 	var col := Style.vbox(12)
 	var header := Style.parchment(14)
@@ -36,14 +36,14 @@ func refresh() -> void:
 	if reports.size() == _last_count:
 		return
 	_last_count = reports.size()
-	for c in _list.get_children():
+	for c: Node in _list.get_children():
 		c.queue_free()
 	if reports.is_empty():
 		var empty := Style.parchment(12)
 		empty.add_child(Style.margin(Style.label("Пока тихо. Скоро здесь будут донесения.", Style.FONT_S, Style.TEXT_DIM), 12))
 		_list.add_child(empty)
 		return
-	for idx in range(reports.size()-1, -1, -1):
+	for idx: int in range(reports.size()-1, -1, -1):
 		_list.add_child(_report_card(reports[idx]))
 		if _list.get_child_count() >= 40:
 			break

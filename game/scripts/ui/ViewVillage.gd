@@ -18,7 +18,7 @@ func setup(root: Control) -> void:
 	_root = root
 
 func rebuild() -> void:
-	for c in get_children():
+	for c: Node in get_children():
 		c.queue_free()
 	_slot_buttons.clear()
 
@@ -99,10 +99,10 @@ func rebuild() -> void:
 func _layout_ring() -> void:
 	if _ring == null or _slot_buttons.is_empty():
 		return
-	var rect := _ring.get_parent().size
+	var rect: Vector2 = _ring.get_parent().size
 	if rect.x <= 0:
 		rect = Vector2(360, 440)
-	var centre := rect * 0.5
+	var centre: Vector2 = rect * 0.5
 	var radius: float = min(rect.x, rect.y) * 0.46
 	for i in range(T.SLOT_COUNT):
 		var spec: Dictionary = T.SLOT_LAYOUT[i]
@@ -129,7 +129,7 @@ func refresh() -> void:
 		var id: String = slot["id"]
 		var lvl := int(slot["lvl"])
 		# Clear old level badge
-		for child in b.get_children():
+		for child: Node in b.get_children():
 			if child.name == "LvlBadge":
 				child.queue_free()
 		var is_empty := id == "" or lvl == 0

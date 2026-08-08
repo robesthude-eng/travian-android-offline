@@ -43,8 +43,8 @@ static func _ensure_atlas() -> void:
 		_build_atlas = _try_load(ATLAS_DIR + "buildings.png")
 		var json_path := ATLAS_DIR + "buildings.json"
 		if FileAccess.file_exists(json_path):
-			var txt := FileAccess.get_file_as_string(json_path)
-			var parsed := JSON.parse_string(txt)
+			var txt: String = FileAccess.get_file_as_string(json_path)
+			var parsed: Variant = JSON.parse_string(txt)
 			if parsed is Dictionary:
 				_build_map = parsed
 	# Load units atlas
@@ -52,13 +52,13 @@ static func _ensure_atlas() -> void:
 		_unit_atlas = _try_load(ATLAS_DIR + "units.png")
 		var json_path2 := ATLAS_DIR + "units.json"
 		if FileAccess.file_exists(json_path2):
-			var txt2 := FileAccess.get_file_as_string(json_path2)
-			var parsed2 := JSON.parse_string(txt2)
+			var txt2: String = FileAccess.get_file_as_string(json_path2)
+			var parsed2: Variant = JSON.parse_string(txt2)
 			if parsed2 is Dictionary:
 				_unit_map = parsed2
 
 static func _atlas_texture(atlas: Texture2D, entry: Dictionary) -> Texture2D:
-	var at := AtlasTexture.new()
+	var at: AtlasTexture = AtlasTexture.new()
 	at.atlas = atlas
 	at.region = Rect2(float(entry["x"]), float(entry["y"]), float(entry["w"]), float(entry["h"]))
 	at.filter_clip = true

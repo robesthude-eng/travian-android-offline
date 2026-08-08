@@ -18,7 +18,7 @@ func setup(root: Control) -> void:
 	_root = root
 
 func rebuild() -> void:
-	for c in get_children():
+	for c: Node in get_children():
 		c.queue_free()
 	var v := G.village()
 	var col := Style.vbox(12)
@@ -198,7 +198,7 @@ func refresh() -> void:
 	var v := G.village()
 	if v.is_empty() or _garrison_box == null:
 		return
-	for c in _garrison_box.get_children():
+	for c: Node in _garrison_box.get_children():
 		c.queue_free()
 	if v["troops"].is_empty():
 		_garrison_box.add_child(Style.wrapped("Пусто. Деревня беззащитна — строй казарму и обучай войска.", Style.FONT_S, Style.WARN))
@@ -220,7 +220,7 @@ func refresh() -> void:
 			grid.add_child(row)
 		_garrison_box.add_child(grid)
 
-	for c in _queue_box.get_children():
+	for c: Node in _queue_box.get_children():
 		c.queue_free()
 	if v["train_queue"].is_empty():
 		_queue_box.add_child(Style.label("Никого не обучаем.", Style.FONT_S, Style.TEXT_DIM))

@@ -132,7 +132,7 @@ func refresh() -> void:
 func _refresh_hero() -> void:
 	if _hero_box == null or G.state.is_empty():
 		return
-	for c in _hero_box.get_children():
+	for c: Node in _hero_box.get_children():
 		c.queue_free()
 	var h: Dictionary = G.state.get("hero", {})
 	if h.is_empty():
@@ -162,9 +162,9 @@ func _refresh_hero() -> void:
 func _refresh_garrison() -> void:
 	if _garrison_box == null or G.state.is_empty():
 		return
-	for c in _garrison_box.get_children():
+	for c: Node in _garrison_box.get_children():
 		c.queue_free()
-	for c in _queue_box.get_children():
+	for c: Node in _queue_box.get_children():
 		c.queue_free()
 	var v := G.village()
 	if v.is_empty():
@@ -203,7 +203,7 @@ func _refresh_garrison() -> void:
 func _refresh_moves() -> void:
 	if _moves_box == null:
 		return
-	for c in _moves_box.get_children():
+	for c: Node in _moves_box.get_children():
 		c.queue_free()
 	if G.state.is_empty():
 		return
@@ -241,12 +241,12 @@ func _refresh_moves() -> void:
 func _refresh_reports() -> void:
 	if _reports_box == null:
 		return
-	for c in _reports_box.get_children():
+	for c: Node in _reports_box.get_children():
 		c.queue_free()
 	var reports: Array = G.state.get("reports", [])
 	var unread := Sim.unread_reports(G.state)
 	if _unread_label:
-		_unread_label.text = unread > 0 ? "(%d)" % unread : ""
+		_unread_label.text = ("(%d)" % unread) if unread > 0 else ""
 		_unread_label.add_theme_color_override("font_color", Style.WARN if unread>0 else Style.TEXT_DIM)
 	if reports.is_empty():
 		_reports_box.add_child(Style.label("Тихо", Style.FONT_XXS, Style.TEXT_DIM))

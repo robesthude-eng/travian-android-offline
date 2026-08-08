@@ -23,7 +23,7 @@ func _ready() -> void:
 	var col := Style.vbox(12)
 	col.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
-	var cover := Art.loading_cover()
+	var cover: Texture2D = Art.loading_cover()
 	if cover:
 		var tr := Style.texture(cover, Vector2(0, 160))
 		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
@@ -44,7 +44,7 @@ func _ready() -> void:
 	col.add_child(Style.label("Племя", Style.FONT_M))
 	var tribe_row := Style.hbox(6)
 	for id: String in [T.TRIBE_ROMANS, T.TRIBE_GAULS, T.TRIBE_GERMANS]:
-		var b := Style.button(String(T.TRIBES[id]["label"]), Style.FONT_M, id == _tribe)
+		var b: Button = Style.button(String(T.TRIBES[id]["label"]), Style.FONT_M, id == _tribe)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var tribe_id := id
 		b.pressed.connect(func(): _pick_tribe(tribe_id))
@@ -61,7 +61,7 @@ func _ready() -> void:
 		Style.FONT_S, Style.TEXT_DIM))
 	var speed_row := Style.hbox(6)
 	for value: float in [1.0, 3.0, 5.0, 10.0]:
-		var b := Style.button("%dx" % int(value), Style.FONT_M, is_equal_approx(value, _speed))
+		var b: Button = Style.button("%dx" % int(value), Style.FONT_M, is_equal_approx(value, _speed))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var v := value
 		b.pressed.connect(func(): _pick_speed(v))

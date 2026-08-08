@@ -19,7 +19,7 @@ func setup(root: Control) -> void:
 	_root = root
 
 func rebuild() -> void:
-	for c in get_children():
+	for c: Node in get_children():
 		c.queue_free()
 	_field_buttons.clear()
 
@@ -137,11 +137,11 @@ func rebuild() -> void:
 func _layout_ring() -> void:
 	if _ring == null or _field_buttons.is_empty():
 		return
-	var rect := _ring.get_parent().size
+	var rect: Vector2 = _ring.get_parent().size
 	# _ring size is 380, centre is holder size
 	if rect.x <= 0:
 		rect = Vector2(360, 380)
-	var centre_pos := rect * 0.5
+	var centre_pos: Vector2 = rect * 0.5
 	var radius: float = min(rect.x, rect.y) * 0.44
 	for i in range(18):
 		var spec: Dictionary = T.FIELD_LAYOUT[i]
@@ -212,7 +212,7 @@ func refresh() -> void:
 func _refresh_queue(v: Dictionary) -> void:
 	if _queue_box == null:
 		return
-	for c in _queue_box.get_children():
+	for c: Node in _queue_box.get_children():
 		c.queue_free()
 	if v["build_queue"].is_empty():
 		_queue_box.add_child(Style.label("Пусто — можно строить.", Style.FONT_S, Style.TEXT_DIM))

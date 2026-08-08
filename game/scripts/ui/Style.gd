@@ -223,7 +223,7 @@ static func res_badge(res: int, size: int = 28) -> Control:
 		return holder
 	# fallback old emoji
 	var holder2 := PanelContainer.new()
-	var c := RES_COLORS[res].darkened(0.2)
+	var c: Color = RES_COLORS[res].darkened(0.2)
 	var sb2 := StyleBoxFlat.new()
 	sb2.bg_color = c
 	sb2.corner_radius_top_left = size/2

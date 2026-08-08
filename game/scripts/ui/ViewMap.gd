@@ -23,7 +23,7 @@ func setup(root: Control) -> void:
 	_root = root
 
 func rebuild() -> void:
-	for c in get_children():
+	for c: Node in get_children():
 		c.queue_free()
 	_tiles.clear()
 	var v := G.village()
@@ -107,7 +107,7 @@ func _object_at(x: int, y: int) -> Dictionary:
 	for b in G.state["bots"]:
 		if int(b["x"]) == x and int(b["y"]) == y:
 			return {"kind": "bot", "ref": b}
-	for c in G.state["camps"]:
+	for c: Dictionary in G.state["camps"]:
 		if int(c["x"]) == x and int(c["y"]) == y and bool(c["alive"]):
 			return {"kind": "camp", "ref": c}
 	for o in G.state["oases"]:
@@ -197,7 +197,7 @@ func _update_tiles() -> void:
 func refresh() -> void:
 	if _moves_box == null:
 		return
-	for c in _moves_box.get_children():
+	for c: Node in _moves_box.get_children():
 		c.queue_free()
 	var any := false
 	for m in G.state["movements"]:

@@ -20,7 +20,7 @@ func setup(root: Control) -> void:
 	_root = root
 
 func rebuild() -> void:
-	for c in get_children():
+	for c: Node in get_children():
 		c.queue_free()
 	var h: Dictionary = G.state["hero"]
 	var col := Style.vbox(12)

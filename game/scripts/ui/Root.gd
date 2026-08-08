@@ -69,7 +69,7 @@ func _ready() -> void:
 # selftest (unchanged, but new nav)
 func _painted_area(node: Node) -> float:
 	var best := 0.0
-	for child in node.get_children():
+	for child: Node in node.get_children():
 		if child is Control and child.visible:
 			var c: Control = child
 			best = maxf(best, c.size.x * c.size.y)
@@ -164,7 +164,7 @@ func _process(delta: float) -> void:
 
 # ---------------------------------------------------------------------------
 func _show_new_game() -> void:
-	for c in get_children():
+	for c: Node in get_children():
 		if c is ColorRect:
 			continue
 		c.queue_free()
@@ -175,7 +175,7 @@ func _show_new_game() -> void:
 
 func start_new_game(player_name: String, tribe: String, speed: float) -> void:
 	G.new_game(player_name, tribe, speed)
-	for c in get_children():
+	for c: Node in get_children():
 		if c is ColorRect:
 			continue
 		c.queue_free()
@@ -422,11 +422,11 @@ func show_view(key: String) -> void:
 	if not _views.has(key):
 		return
 	_current = key
-	for k in _views:
+	for k: String in _views:
 		_views[k].visible = (k == key)
-	for k in _nav_buttons:
+	for k: String in _nav_buttons:
 		var b: Button = _nav_buttons[k]
-		var active := k == key
+		var active: bool = k == key
 		_restyle_nav_button(b, active)
 	_views[key].rebuild()
 	if key == "reports":
@@ -498,7 +498,7 @@ func _refresh_top_bar() -> void:
 
 # ---------------------------------------------------------------------------
 func show_modal(title_text: String, body: Control, buttons: Array) -> void:
-	for c in _modal_layer.get_children():
+	for c: Node in _modal_layer.get_children():
 		c.queue_free()
 	_modal_layer.visible = true
 	var shade := ColorRect.new()
@@ -544,7 +544,7 @@ func show_modal(title_text: String, body: Control, buttons: Array) -> void:
 			clampf((size.y - frame.size.y) * 0.5, 20.0, size.y))
 
 func close_modal() -> void:
-	for c in _modal_layer.get_children():
+	for c: Node in _modal_layer.get_children():
 		c.queue_free()
 	_modal_layer.visible = false
 
