@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Watchtower over a palisade: the silhouette used for the launcher icon. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- palisade -->
+    <path
+        android:fillColor="#8C6239"
+        android:pathData="M30,72 L36,72 L36,60 L33,56 L30,60 Z" />
+    <path
+        android:fillColor="#A0714A"
+        android:pathData="M38,72 L44,72 L44,58 L41,54 L38,58 Z" />
+    <path
+        android:fillColor="#8C6239"
+        android:pathData="M64,72 L70,72 L70,58 L67,54 L64,58 Z" />
+    <path
+        android:fillColor="#A0714A"
+        android:pathData="M72,72 L78,72 L78,60 L75,56 L72,60 Z" />
+
+    <!-- tower body -->
+    <path
+        android:fillColor="#C89A5B"
+        android:pathData="M46,76 L62,76 L60,44 L48,44 Z" />
+    <path
+        android:fillColor="#A87F45"
+        android:pathData="M54,76 L62,76 L60,44 L54,44 Z" />
+
+    <!-- battlement -->
+    <path
+        android:fillColor="#E4C07A"
+        android:pathData="M44,44 L64,44 L64,36 L60,36 L60,40 L56,40 L56,36 L52,36 L52,40 L48,40 L48,36 L44,36 Z" />
+
+    <!-- banner -->
+    <path
+        android:fillColor="#D9A441"
+        android:pathData="M54,36 L54,16 L56,16 L56,36 Z" />
+    <path
+        android:fillColor="#E05C3E"
+        android:pathData="M56,17 L76,22 L56,29 Z" />
+
+    <!-- ground -->
+    <path
+        android:fillColor="#3F7A4E"
+        android:pathData="M22,76 L86,76 L90,86 L18,86 Z" />
+</vector>

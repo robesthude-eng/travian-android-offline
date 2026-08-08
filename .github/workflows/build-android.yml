@@ -1,0 +1,100 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, 'claude/**' ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Публикует релиз с этим тегом, например v1.0.0. Пусто — обычная сборка.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # нужны теги, чтобы вывести номер версии
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # versionCode — номер запуска: он строго растёт, и только при этом
+      # условии Android соглашается ставить APK поверх предыдущего.
+      # versionName косметический: имя тега на тег-сборке, иначе <база>.<номер>.
+      - name: Compute version
+        run: |
+          set -euo pipefail
+          CODE="${GITHUB_RUN_NUMBER}"
+          REL_TAG="${{ github.event.inputs.release_tag }}"
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            NAME="${GITHUB_REF_NAME#v}"
+          elif [ -n "$REL_TAG" ]; then
+            NAME="${REL_TAG#v}"
+          else
+            BASE="$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' | cut -d. -f1,2 || true)"
+            [ -n "$BASE" ] || BASE="1.0"
+            NAME="${BASE}.${CODE}"
+          fi
+          echo "VERSION_CODE=$CODE" >> "$GITHUB_ENV"
+          echo "VERSION_NAME=$NAME" >> "$GITHUB_ENV"
+          echo "APK_NAME=tribes-era-${NAME}.apk" >> "$GITHUB_ENV"
+
+      - name: Run engine tests
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Build release APK
+        run: |
+          ./gradlew assembleRelease --stacktrace \
+            -PversionCode="${VERSION_CODE}" \
+            -PversionName="${VERSION_NAME}"
+
+      - name: Rename APK
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/release/app-release.apk "dist/${APK_NAME}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tribes-era-apk
+          path: dist/*.apk
+          if-no-files-found: error
+
+      - name: Upload test report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: app/build/reports/tests/
+          if-no-files-found: ignore
+
+      - name: Create tag for manual release
+        if: ${{ github.event.inputs.release_tag != '' }}
+        run: |
+          set -euo pipefail
+          git tag "${{ github.event.inputs.release_tag }}"
+          git push origin "${{ github.event.inputs.release_tag }}"
+
+      - name: Publish release
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || github.event.inputs.release_tag != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.release_tag != '' && github.event.inputs.release_tag || github.ref_name }}
+          name: Эра Племён ${{ env.VERSION_NAME }}
+          files: dist/*.apk
+          generate_release_notes: true

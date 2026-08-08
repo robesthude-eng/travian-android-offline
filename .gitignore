@@ -1,10 +1,13 @@
-# Godot
-.godot/
-build/
-export_presets.local.cfg
-*.translation
-
-# OS / editor noise
+*.iml
+.gradle/
+/local.properties
+/.idea/
 .DS_Store
-Thumbs.db
-*.import
+build/
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+*.apk
+*.aab
+.kotlin/
