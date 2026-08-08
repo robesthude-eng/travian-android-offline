@@ -42,7 +42,7 @@ static func building(building_id: String, level: int) -> Texture2D:
 	var base: String = b.get("art", "")
 	if base == "":
 		return null
-	var lod := LOD_SUFFIX[lod_index(max(1, level))]
+	var lod: String = LOD_SUFFIX[lod_index(maxi(1, level))]
 	var tex := _try_load(BUILDINGS_DIR + base + lod + ".png")
 	if tex != null:
 		return tex

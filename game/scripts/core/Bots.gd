@@ -272,7 +272,7 @@ static func _fmt_eta(seconds: float) -> String:
 
 ## Short public summary of a rival, used by the map panel and the LLM prompt.
 static func describe(bot: Dictionary) -> String:
-	var personality_label := {
+	var personality_label: String = {
 		"aggressive": "агрессор",
 		"economic": "экономист",
 		"defensive": "оборонщик",

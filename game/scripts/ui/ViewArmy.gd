@@ -116,7 +116,7 @@ func _open_train(unit_id: String) -> void:
 	body.add_child(spin)
 
 	var quick := Style.hbox(6)
-	for n in [1, 5, 10, 50]:
+	for n: int in [1, 5, 10, 50]:
 		var b := Style.button(str(n), Style.FONT_S, false)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var count := n

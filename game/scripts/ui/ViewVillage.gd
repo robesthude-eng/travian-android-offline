@@ -188,7 +188,7 @@ func _show_picker(index: int) -> void:
 
 	var available: Array = []
 	var locked: Array = []
-	for id in T.buildable_ids(v["tribe"]):
+	for id: String in T.buildable_ids(v["tribe"]):
 		var check := Actions.can_build(G.state, v, index, id)
 		if check["ok"]:
 			available.append([id, check])
@@ -237,7 +237,7 @@ func _open_festival() -> void:
 	body.add_child(Style.wrapped(
 		"Праздники дают культуру разом. Культура нужна, чтобы основывать новые деревни.",
 		Style.FONT_S, Style.TEXT_DIM))
-	for big in [false, true]:
+	for big: bool in [false, true]:
 		var check := Actions.can_celebrate(G.state, v, big)
 		var panel := Style.panel(Style.PANEL_LIGHT, 10)
 		var col := Style.vbox(4)

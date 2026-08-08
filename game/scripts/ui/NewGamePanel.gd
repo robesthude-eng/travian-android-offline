@@ -43,7 +43,7 @@ func _ready() -> void:
 
 	col.add_child(Style.label("Племя", Style.FONT_M))
 	var tribe_row := Style.hbox(6)
-	for id in [T.TRIBE_ROMANS, T.TRIBE_GAULS, T.TRIBE_GERMANS]:
+	for id: String in [T.TRIBE_ROMANS, T.TRIBE_GAULS, T.TRIBE_GERMANS]:
 		var b := Style.button(String(T.TRIBES[id]["label"]), Style.FONT_M, id == _tribe)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var tribe_id := id
@@ -60,7 +60,7 @@ func _ready() -> void:
 		"Множитель добычи, стройки и обучения. 3x — комфортный темп для телефона.",
 		Style.FONT_S, Style.TEXT_DIM))
 	var speed_row := Style.hbox(6)
-	for value in [1.0, 3.0, 5.0, 10.0]:
+	for value: float in [1.0, 3.0, 5.0, 10.0]:
 		var b := Style.button("%dx" % int(value), Style.FONT_M, is_equal_approx(value, _speed))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var v := value

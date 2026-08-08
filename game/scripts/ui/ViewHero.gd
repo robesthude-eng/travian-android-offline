@@ -78,7 +78,7 @@ func rebuild() -> void:
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
-	for slot in T.HERO_EQUIP_SLOTS:
+	for slot: String in T.HERO_EQUIP_SLOTS:
 		var panel := Style.panel(Style.PANEL_LIGHT, 10)
 		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var inner := Style.vbox(2)

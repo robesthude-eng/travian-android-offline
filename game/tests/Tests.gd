@@ -205,9 +205,9 @@ func _test_production_and_caps() -> void:
 		check(prod[r] > 0.0, "produces %s" % T.RES_NAMES[r])
 
 	# A bonus building must actually add output.
-	var before := Sim.production(s, v)[T.W]
+	var before: float = Sim.production(s, v)[T.W]
 	v["slots"][5] = {"id": "sawmill", "lvl": 5}
-	var after := Sim.production(s, v)[T.W]
+	var after: float = Sim.production(s, v)[T.W]
 	check(after > before, "sawmill raises wood output")
 	check(near(after, before * 1.25, before * 0.02), "sawmill lvl5 is +25%")
 

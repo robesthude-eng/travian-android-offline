@@ -402,7 +402,7 @@ static func _starve(state: Dictionary, v: Dictionary) -> void:
 			if u.is_empty():
 				continue
 			# Prefer eating a lot while costing little.
-			var score := float(u["eat"]) / max(1.0, T.res_sum(u["cost"]) / 1000.0)
+			var score: float = float(u["eat"]) / max(1.0, T.res_sum(u["cost"]) / 1000.0)
 			if score > worst:
 				worst = score
 				victim = id
@@ -746,9 +746,21 @@ static func _resolve_arrival(state: Dictionary, m: Dictionary, index: int) -> vo
 		if bool(m.get("hero", false)) and not result["attacker_won"]:
 			Hero.wound(state)
 
+	# Phrase the headline from the player's side: a bot "winning" its attack is
+	# bad news for you, and must not read as a victory in your report list.
+	var headline := ""
+	if is_player:
+		headline = ("Победа" if result["attacker_won"] else "Поражение") + " — " + defender_name
+	else:
+		var raider := String(m.get("owner_name", "Противник"))
+		if result["attacker_won"]:
+			headline = "Нас разграбил %s — %s" % [raider, defender_name]
+		else:
+			headline = "Отбили атаку: %s — %s" % [raider, defender_name]
+
 	add_report(state, {
 		"type": "battle",
-		"title": ("Победа" if result["attacker_won"] else "Поражение") + " — " + defender_name,
+		"title": headline,
 		"attacker": "Ты" if is_player else String(m.get("owner_name", "Противник")),
 		"defender": defender_name,
 		"player_is_attacker": is_player,

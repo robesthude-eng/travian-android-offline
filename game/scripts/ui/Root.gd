@@ -26,6 +26,9 @@ var _village_button: Button
 var _modal_layer: Control
 var _toast_label: Label
 var _toast_timer := 0.0
+## The offline summary is emitted during load_game(), before the shell exists,
+## so it is parked here and shown once there is something to show it in.
+var _pending_offline := {}
 
 
 func _ready() -> void:
@@ -42,10 +45,53 @@ func _ready() -> void:
 
 	if G.has_save() and G.load_game():
 		_build_game_ui()
+		if not _pending_offline.is_empty():
+			_show_offline_summary()
 	else:
 		_show_new_game()
 
 	set_process(true)
+
+
+func _on_offline_report(seconds: float, gained: Dictionary) -> void:
+	_pending_offline = {"seconds": seconds, "gained": gained}
+
+
+func _show_offline_summary() -> void:
+	var seconds: float = float(_pending_offline.get("seconds", 0.0))
+	var gained: Array = _pending_offline.get("gained", {}).get("res", T.res_zero())
+	_pending_offline = {}
+
+	var body := Style.vbox(8)
+	body.add_child(Style.wrapped("Тебя не было %s. Мир не стоял на месте."
+			% G.fmt_time(seconds), Style.FONT_M))
+
+	body.add_child(Style.label("Добыто:", Style.FONT_S, Style.TEXT_DIM))
+	var row := Style.hbox(12)
+	for r in range(4):
+		row.add_child(Style.label("%s %s" % [T.RES_ICONS[r], G.fmt_number(gained[r])],
+				Style.FONT_M, Style.GOOD if float(gained[r]) > 0.0 else Style.TEXT_DIM))
+	body.add_child(row)
+
+	# Anything that happened while away is already in the report list; surface
+	# the ones the player actually needs to know about.
+	var battles := 0
+	var raided := false
+	for rep in G.state.get("reports", []):
+		if float(rep.get("t", 0.0)) < float(G.state["t"]) - seconds:
+			continue
+		if String(rep.get("type", "")) == "battle":
+			battles += 1
+			if not bool(rep.get("player_is_attacker", true)) and bool(rep.get("won", false)):
+				raided = true
+	if battles > 0:
+		body.add_child(Style.separator())
+		body.add_child(Style.wrapped("Сражений за это время: %d." % battles, Style.FONT_S))
+		if raided:
+			body.add_child(Style.wrapped("Тебя успели ограбить — загляни в «Вести».",
+					Style.FONT_S, Style.BAD))
+
+	show_modal("С возвращением", body, [{"text": "К делам", "primary": true}])
 
 
 func _process(delta: float) -> void:
@@ -366,7 +412,7 @@ func _show_settings() -> void:
 		"Умножает добычу, стройку и обучение. Меняется в любой момент.",
 		Style.FONT_S, Style.TEXT_DIM))
 	var speed_row := Style.hbox(6)
-	for value in [1.0, 3.0, 5.0, 10.0]:
+	for value: float in [1.0, 3.0, 5.0, 10.0]:
 		var b := Style.button("%dx" % int(value), Style.FONT_M, is_equal_approx(G.speed(), value))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var v := value
