@@ -195,11 +195,13 @@ jobs:
           test "$SIZE" -gt 5000000
 
           BT="$ANDROID_SDK_ROOT/build-tools/34.0.0"
-          "$BT/aapt" dump badging "$APK" | grep -E "^package:|^application-label"
+          # Captured whole rather than piped through head: under pipefail a
+          # short reader can kill aapt with SIGPIPE and fail the step.
+          BADGE=$("$BT/aapt" dump badging "$APK")
+          echo "$BADGE" | grep -E "^package:|^application-label"
 
           # The version actually baked into the APK must match what we asked
           # for, or "update instead of reinstall" silently stops working.
-          BADGE=$("$BT/aapt" dump badging "$APK" | head -1)
           echo "$BADGE" | grep -q "versionCode='${VERSION_CODE}'"
           echo "$BADGE" | grep -q "versionName='${VERSION_NAME}'"
 
