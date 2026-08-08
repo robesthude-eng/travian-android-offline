@@ -1,0 +1,602 @@
+{
+  "01_Main_Building.png": {
+    "x": 0,
+    "y": 0,
+    "w": 256,
+    "h": 256
+  },
+  "01_Main_Building_LOD1_1-5_Thatch.png": {
+    "x": 256,
+    "y": 0,
+    "w": 256,
+    "h": 256
+  },
+  "01_Main_Building_LOD2_6-15_Wood.png": {
+    "x": 512,
+    "y": 0,
+    "w": 256,
+    "h": 256
+  },
+  "01_Main_Building_LOD3_16-20_Stone.png": {
+    "x": 768,
+    "y": 0,
+    "w": 256,
+    "h": 256
+  },
+  "02_Warehouse.png": {
+    "x": 1024,
+    "y": 0,
+    "w": 256,
+    "h": 256
+  },
+  "02_Warehouse_LOD1_1-5_Thatch.png": {
+    "x": 1280,
+    "y": 0,
+    "w": 256,
+    "h": 256
+  },
+  "02_Warehouse_LOD2_6-15_Wood.png": {
+    "x": 1536,
+    "y": 0,
+    "w": 256,
+    "h": 256
+  },
+  "02_Warehouse_LOD3_16-20_Stone.png": {
+    "x": 1792,
+    "y": 0,
+    "w": 256,
+    "h": 256
+  },
+  "03_Granary.png": {
+    "x": 2048,
+    "y": 0,
+    "w": 256,
+    "h": 256
+  },
+  "03_Granary_LOD1_1-5_Thatch.png": {
+    "x": 2304,
+    "y": 0,
+    "w": 256,
+    "h": 256
+  },
+  "03_Granary_LOD2_6-15_Wood.png": {
+    "x": 0,
+    "y": 256,
+    "w": 256,
+    "h": 256
+  },
+  "03_Granary_LOD3_16-20_Stone.png": {
+    "x": 256,
+    "y": 256,
+    "w": 256,
+    "h": 256
+  },
+  "04_Barracks.png": {
+    "x": 512,
+    "y": 256,
+    "w": 256,
+    "h": 256
+  },
+  "04_Barracks_LOD1_1-5_Thatch.png": {
+    "x": 768,
+    "y": 256,
+    "w": 256,
+    "h": 256
+  },
+  "04_Barracks_LOD2_6-15_Wood.png": {
+    "x": 1024,
+    "y": 256,
+    "w": 256,
+    "h": 256
+  },
+  "04_Barracks_LOD3_16-20_Stone.png": {
+    "x": 1280,
+    "y": 256,
+    "w": 256,
+    "h": 256
+  },
+  "05_Stable.png": {
+    "x": 1536,
+    "y": 256,
+    "w": 256,
+    "h": 256
+  },
+  "05_Stable_LOD1_1-5_Thatch.png": {
+    "x": 1792,
+    "y": 256,
+    "w": 256,
+    "h": 256
+  },
+  "05_Stable_LOD2_6-15_Wood.png": {
+    "x": 2048,
+    "y": 256,
+    "w": 256,
+    "h": 256
+  },
+  "05_Stable_LOD3_16-20_Stone.png": {
+    "x": 2304,
+    "y": 256,
+    "w": 256,
+    "h": 256
+  },
+  "06_Blacksmith_Workshop.png": {
+    "x": 0,
+    "y": 512,
+    "w": 256,
+    "h": 256
+  },
+  "06_Blacksmith_Workshop_LOD1_1-5_Thatch.png": {
+    "x": 256,
+    "y": 512,
+    "w": 256,
+    "h": 256
+  },
+  "06_Blacksmith_Workshop_LOD2_6-15_Wood.png": {
+    "x": 512,
+    "y": 512,
+    "w": 256,
+    "h": 256
+  },
+  "06_Blacksmith_Workshop_LOD3_16-20_Stone.png": {
+    "x": 768,
+    "y": 512,
+    "w": 256,
+    "h": 256
+  },
+  "07_Marketplace.png": {
+    "x": 1024,
+    "y": 512,
+    "w": 256,
+    "h": 256
+  },
+  "07_Marketplace_LOD1_1-5_Thatch.png": {
+    "x": 1280,
+    "y": 512,
+    "w": 256,
+    "h": 256
+  },
+  "07_Marketplace_LOD2_6-15_Wood.png": {
+    "x": 1536,
+    "y": 512,
+    "w": 256,
+    "h": 256
+  },
+  "07_Marketplace_LOD3_16-20_Stone.png": {
+    "x": 1792,
+    "y": 512,
+    "w": 256,
+    "h": 256
+  },
+  "08_Residence.png": {
+    "x": 2048,
+    "y": 512,
+    "w": 256,
+    "h": 256
+  },
+  "08_Residence_LOD1_1-5_Thatch.png": {
+    "x": 2304,
+    "y": 512,
+    "w": 256,
+    "h": 256
+  },
+  "08_Residence_LOD2_6-15_Wood.png": {
+    "x": 0,
+    "y": 768,
+    "w": 256,
+    "h": 256
+  },
+  "08_Residence_LOD3_16-20_Stone.png": {
+    "x": 256,
+    "y": 768,
+    "w": 256,
+    "h": 256
+  },
+  "09_TownHall_Palace.png": {
+    "x": 512,
+    "y": 768,
+    "w": 256,
+    "h": 256
+  },
+  "09_TownHall_Palace_LOD1_1-5_Thatch.png": {
+    "x": 768,
+    "y": 768,
+    "w": 256,
+    "h": 256
+  },
+  "09_TownHall_Palace_LOD2_6-15_Wood.png": {
+    "x": 1024,
+    "y": 768,
+    "w": 256,
+    "h": 256
+  },
+  "09_TownHall_Palace_LOD3_16-20_Stone.png": {
+    "x": 1280,
+    "y": 768,
+    "w": 256,
+    "h": 256
+  },
+  "10_City_Wall.png": {
+    "x": 1536,
+    "y": 768,
+    "w": 256,
+    "h": 256
+  },
+  "10_City_Wall_LOD1_1-5_Thatch.png": {
+    "x": 1792,
+    "y": 768,
+    "w": 256,
+    "h": 256
+  },
+  "10_City_Wall_LOD2_6-15_Wood.png": {
+    "x": 2048,
+    "y": 768,
+    "w": 256,
+    "h": 256
+  },
+  "10_City_Wall_LOD3_16-20_Stone.png": {
+    "x": 2304,
+    "y": 768,
+    "w": 256,
+    "h": 256
+  },
+  "11_Sawmill.png": {
+    "x": 0,
+    "y": 1024,
+    "w": 256,
+    "h": 256
+  },
+  "11_Sawmill_LOD1_1-5_Thatch.png": {
+    "x": 256,
+    "y": 1024,
+    "w": 256,
+    "h": 256
+  },
+  "11_Sawmill_LOD2_6-15_Wood.png": {
+    "x": 512,
+    "y": 1024,
+    "w": 256,
+    "h": 256
+  },
+  "11_Sawmill_LOD3_16-20_Stone.png": {
+    "x": 768,
+    "y": 1024,
+    "w": 256,
+    "h": 256
+  },
+  "12_Brickyard.png": {
+    "x": 1024,
+    "y": 1024,
+    "w": 256,
+    "h": 256
+  },
+  "12_Brickyard_LOD1_1-5_Thatch.png": {
+    "x": 1280,
+    "y": 1024,
+    "w": 256,
+    "h": 256
+  },
+  "12_Brickyard_LOD2_6-15_Wood.png": {
+    "x": 1536,
+    "y": 1024,
+    "w": 256,
+    "h": 256
+  },
+  "12_Brickyard_LOD3_16-20_Stone.png": {
+    "x": 1792,
+    "y": 1024,
+    "w": 256,
+    "h": 256
+  },
+  "13_Iron_Foundry.png": {
+    "x": 2048,
+    "y": 1024,
+    "w": 256,
+    "h": 256
+  },
+  "13_Iron_Foundry_LOD1_1-5_Thatch.png": {
+    "x": 2304,
+    "y": 1024,
+    "w": 256,
+    "h": 256
+  },
+  "13_Iron_Foundry_LOD2_6-15_Wood.png": {
+    "x": 0,
+    "y": 1280,
+    "w": 256,
+    "h": 256
+  },
+  "13_Iron_Foundry_LOD3_16-20_Stone.png": {
+    "x": 256,
+    "y": 1280,
+    "w": 256,
+    "h": 256
+  },
+  "14_Grain_Mill.png": {
+    "x": 512,
+    "y": 1280,
+    "w": 256,
+    "h": 256
+  },
+  "14_Grain_Mill_LOD1_1-5_Thatch.png": {
+    "x": 768,
+    "y": 1280,
+    "w": 256,
+    "h": 256
+  },
+  "14_Grain_Mill_LOD2_6-15_Wood.png": {
+    "x": 1024,
+    "y": 1280,
+    "w": 256,
+    "h": 256
+  },
+  "14_Grain_Mill_LOD3_16-20_Stone.png": {
+    "x": 1280,
+    "y": 1280,
+    "w": 256,
+    "h": 256
+  },
+  "15_Bakery.png": {
+    "x": 1536,
+    "y": 1280,
+    "w": 256,
+    "h": 256
+  },
+  "15_Bakery_LOD1_1-5_Thatch.png": {
+    "x": 1792,
+    "y": 1280,
+    "w": 256,
+    "h": 256
+  },
+  "15_Bakery_LOD2_6-15_Wood.png": {
+    "x": 2048,
+    "y": 1280,
+    "w": 256,
+    "h": 256
+  },
+  "15_Bakery_LOD3_16-20_Stone.png": {
+    "x": 2304,
+    "y": 1280,
+    "w": 256,
+    "h": 256
+  },
+  "16_Embassy.png": {
+    "x": 0,
+    "y": 1536,
+    "w": 256,
+    "h": 256
+  },
+  "16_Embassy_LOD1_1-5_Thatch.png": {
+    "x": 256,
+    "y": 1536,
+    "w": 256,
+    "h": 256
+  },
+  "16_Embassy_LOD2_6-15_Wood.png": {
+    "x": 512,
+    "y": 1536,
+    "w": 256,
+    "h": 256
+  },
+  "16_Embassy_LOD3_16-20_Stone.png": {
+    "x": 768,
+    "y": 1536,
+    "w": 256,
+    "h": 256
+  },
+  "17_Smithy_Armoury.png": {
+    "x": 1024,
+    "y": 1536,
+    "w": 256,
+    "h": 256
+  },
+  "17_Smithy_Armoury_LOD1_1-5_Thatch.png": {
+    "x": 1280,
+    "y": 1536,
+    "w": 256,
+    "h": 256
+  },
+  "17_Smithy_Armoury_LOD2_6-15_Wood.png": {
+    "x": 1536,
+    "y": 1536,
+    "w": 256,
+    "h": 256
+  },
+  "17_Smithy_Armoury_LOD3_16-20_Stone.png": {
+    "x": 1792,
+    "y": 1536,
+    "w": 256,
+    "h": 256
+  },
+  "18_Armoury_Blacksmith.png": {
+    "x": 2048,
+    "y": 1536,
+    "w": 256,
+    "h": 256
+  },
+  "18_Armoury_Blacksmith_LOD1_1-5_Thatch.png": {
+    "x": 2304,
+    "y": 1536,
+    "w": 256,
+    "h": 256
+  },
+  "18_Armoury_Blacksmith_LOD2_6-15_Wood.png": {
+    "x": 0,
+    "y": 1792,
+    "w": 256,
+    "h": 256
+  },
+  "18_Armoury_Blacksmith_LOD3_16-20_Stone.png": {
+    "x": 256,
+    "y": 1792,
+    "w": 256,
+    "h": 256
+  },
+  "19_Rally_Point.png": {
+    "x": 512,
+    "y": 1792,
+    "w": 256,
+    "h": 256
+  },
+  "19_Rally_Point_LOD1_1-5_Thatch.png": {
+    "x": 768,
+    "y": 1792,
+    "w": 256,
+    "h": 256
+  },
+  "19_Rally_Point_LOD2_6-15_Wood.png": {
+    "x": 1024,
+    "y": 1792,
+    "w": 256,
+    "h": 256
+  },
+  "19_Rally_Point_LOD3_16-20_Stone.png": {
+    "x": 1280,
+    "y": 1792,
+    "w": 256,
+    "h": 256
+  },
+  "20_Hero_Mansion.png": {
+    "x": 1536,
+    "y": 1792,
+    "w": 256,
+    "h": 256
+  },
+  "20_Hero_Mansion_LOD1_1-5_Thatch.png": {
+    "x": 1792,
+    "y": 1792,
+    "w": 256,
+    "h": 256
+  },
+  "20_Hero_Mansion_LOD2_6-15_Wood.png": {
+    "x": 2048,
+    "y": 1792,
+    "w": 256,
+    "h": 256
+  },
+  "20_Hero_Mansion_LOD3_16-20_Stone.png": {
+    "x": 2304,
+    "y": 1792,
+    "w": 256,
+    "h": 256
+  },
+  "21_Watchtower.png": {
+    "x": 0,
+    "y": 2048,
+    "w": 256,
+    "h": 256
+  },
+  "21_Watchtower_LOD1_1-5_Thatch.png": {
+    "x": 256,
+    "y": 2048,
+    "w": 256,
+    "h": 256
+  },
+  "21_Watchtower_LOD2_6-15_Wood.png": {
+    "x": 512,
+    "y": 2048,
+    "w": 256,
+    "h": 256
+  },
+  "21_Watchtower_LOD3_16-20_Stone.png": {
+    "x": 768,
+    "y": 2048,
+    "w": 256,
+    "h": 256
+  },
+  "22_Cranny_Trapper.png": {
+    "x": 1024,
+    "y": 2048,
+    "w": 256,
+    "h": 256
+  },
+  "22_Cranny_Trapper_LOD1_1-5_Thatch.png": {
+    "x": 1280,
+    "y": 2048,
+    "w": 256,
+    "h": 256
+  },
+  "22_Cranny_Trapper_LOD2_6-15_Wood.png": {
+    "x": 1536,
+    "y": 2048,
+    "w": 256,
+    "h": 256
+  },
+  "22_Cranny_Trapper_LOD3_16-20_Stone.png": {
+    "x": 1792,
+    "y": 2048,
+    "w": 256,
+    "h": 256
+  },
+  "23_Granary_Pit.png": {
+    "x": 2048,
+    "y": 2048,
+    "w": 256,
+    "h": 256
+  },
+  "23_Granary_Pit_LOD1_1-5_Thatch.png": {
+    "x": 2304,
+    "y": 2048,
+    "w": 256,
+    "h": 256
+  },
+  "23_Granary_Pit_LOD2_6-15_Wood.png": {
+    "x": 0,
+    "y": 2304,
+    "w": 256,
+    "h": 256
+  },
+  "23_Granary_Pit_LOD3_16-20_Stone.png": {
+    "x": 256,
+    "y": 2304,
+    "w": 256,
+    "h": 256
+  },
+  "24_Treasury.png": {
+    "x": 512,
+    "y": 2304,
+    "w": 256,
+    "h": 256
+  },
+  "24_Treasury_LOD1_1-5_Thatch.png": {
+    "x": 768,
+    "y": 2304,
+    "w": 256,
+    "h": 256
+  },
+  "24_Treasury_LOD2_6-15_Wood.png": {
+    "x": 1024,
+    "y": 2304,
+    "w": 256,
+    "h": 256
+  },
+  "24_Treasury_LOD3_16-20_Stone.png": {
+    "x": 1280,
+    "y": 2304,
+    "w": 256,
+    "h": 256
+  },
+  "25_Construction_Site.png": {
+    "x": 1536,
+    "y": 2304,
+    "w": 256,
+    "h": 256
+  },
+  "25_Construction_Site_LOD1_1-5_Thatch.png": {
+    "x": 1792,
+    "y": 2304,
+    "w": 256,
+    "h": 256
+  },
+  "25_Construction_Site_LOD2_6-15_Wood.png": {
+    "x": 2048,
+    "y": 2304,
+    "w": 256,
+    "h": 256
+  },
+  "25_Construction_Site_LOD3_16-20_Stone.png": {
+    "x": 2304,
+    "y": 2304,
+    "w": 256,
+    "h": 256
+  }
+}
