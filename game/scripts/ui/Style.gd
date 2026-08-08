@@ -108,12 +108,27 @@ static func margin(child: Control, m := 12) -> MarginContainer:
 	return mc
 
 
+## Stretch a control across its parent.
+##
+## A plain Control does NOT lay out its children — they keep their own anchors,
+## which default to a zero-sized rect in the top-left corner. Every view in this
+## game is a plain Control, so anything added directly to one must be told to
+## fill it or it renders as nothing at all.
+static func fill(node: Control) -> Control:
+	node.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	return node
+
+
+## A scrollable page. Always used as the root child of a view, so it stretches
+## to the view; inside a Container the anchors are ignored and it behaves the
+## same as before.
 static func scroll(child: Control) -> ScrollContainer:
 	var sc := ScrollContainer.new()
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	child.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sc.add_child(child)
+	fill(sc)
 	return sc
 
 

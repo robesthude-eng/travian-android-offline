@@ -32,10 +32,10 @@ var _pending_offline := {}
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var bg := ColorRect.new()
 	bg.color = Style.BG
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bg)
 
@@ -51,6 +51,90 @@ func _ready() -> void:
 		_show_new_game()
 
 	set_process(true)
+
+	if OS.get_cmdline_user_args().has("--uitest"):
+		_run_ui_selftest()
+
+
+# ---------------------------------------------------------------------------
+# Headless layout self-test
+# ---------------------------------------------------------------------------
+#
+# The first build rendered nothing but the background colour: every view is a
+# plain Control, which does not lay out its children, so each page collapsed to
+# a zero-sized rect in the corner. Nothing in the simulation tests could see
+# that. This boots the real UI and asserts that the screens actually occupy the
+# screen.
+#
+#   godot --headless -- --uitest
+
+## Largest visible rectangle anywhere under `node`.
+func _painted_area(node: Node) -> float:
+	var best := 0.0
+	for child in node.get_children():
+		if child is Control and child.visible:
+			var c: Control = child
+			best = maxf(best, c.size.x * c.size.y)
+		best = maxf(best, _painted_area(child))
+	return best
+
+
+func _run_ui_selftest() -> void:
+	var failures: Array = []
+
+	var settle := func() -> void:
+		for i in range(6):
+			await get_tree().process_frame
+
+	await settle.call()
+	var screen := size.x * size.y
+	if screen <= 0.0:
+		failures.append("root control has no size")
+
+	# The start screen must be visible before a game exists.
+	if _views.is_empty():
+		var painted := _painted_area(self)
+		if painted < screen * 0.2:
+			failures.append("new game panel painted %.0f of %.0f px" % [painted, screen])
+		start_new_game("Тест", T.TRIBE_ROMANS, 3.0)
+		await settle.call()
+
+	if _views.is_empty():
+		failures.append("game shell was never built")
+	else:
+		for key in ["fields", "village", "map", "army", "hero", "reports"]:
+			show_view(key)
+			await settle.call()
+			var view: Control = _views[key]
+			if view.size.x <= 0.0 or view.size.y <= 0.0:
+				failures.append("view '%s' has no size" % key)
+				continue
+			var painted := _painted_area(view)
+			if painted < view.size.x * 50.0:
+				failures.append("view '%s' painted only %.0f px" % [key, painted])
+
+		# The top bar must be showing real numbers, not placeholders.
+		if _res_labels.is_empty():
+			failures.append("top bar has no resource labels")
+		elif String(_res_labels[0].text).strip_edges() == "":
+			failures.append("top bar resource label is empty")
+
+		# A modal has to be reachable and visible.
+		var body := Style.vbox(4)
+		body.add_child(Style.label("проверка"))
+		show_modal("Проверка", body, [{"text": "ок"}])
+		await settle.call()
+		if not _modal_layer.visible or _painted_area(_modal_layer) < 1000.0:
+			failures.append("modal did not render")
+		close_modal()
+
+	if failures.is_empty():
+		print("UITEST OK — screen %dx%d, all views painted" % [int(size.x), int(size.y)])
+		get_tree().quit(0)
+	else:
+		for f in failures:
+			printerr("UITEST FAIL: %s" % f)
+		get_tree().quit(1)
 
 
 func _on_offline_report(seconds: float, gained: Dictionary) -> void:
@@ -112,7 +196,7 @@ func _show_new_game() -> void:
 		c.queue_free()
 	var panel := NewGamePanel.new()
 	panel.setup(self)
-	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(panel)
 
 
@@ -136,7 +220,7 @@ func _build_game_ui() -> void:
 	_res_bars.clear()
 
 	var column := Style.vbox(0)
-	column.set_anchors_preset(Control.PRESET_FULL_RECT)
+	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(column)
 
 	column.add_child(_build_top_bar())
@@ -149,7 +233,7 @@ func _build_game_ui() -> void:
 	column.add_child(_build_nav())
 
 	_modal_layer = Control.new()
-	_modal_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_modal_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_modal_layer.visible = false
 	add_child(_modal_layer)
 
@@ -164,7 +248,7 @@ func _build_game_ui() -> void:
 	for key in _views:
 		var v: Control = _views[key]
 		v.setup(self)
-		v.set_anchors_preset(Control.PRESET_FULL_RECT)
+		v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		v.visible = false
 		_content.add_child(v)
 
@@ -236,7 +320,9 @@ func _build_nav() -> Control:
 
 func _build_toast() -> void:
 	var holder := Style.panel(Color("14100a"), 10, 2)
-	holder.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	# Positioned by hand below, so keep the anchors in the corner rather than
+	# fighting a preset that also moves it.
+	holder.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	holder.position = Vector2(20, 120)
 	holder.custom_minimum_size = Vector2(get_viewport_rect().size.x - 40, 0)
 	holder.visible = false
@@ -322,14 +408,14 @@ func show_modal(title_text: String, body: Control, buttons: Array) -> void:
 
 	var shade := ColorRect.new()
 	shade.color = Color(0, 0, 0, 0.65)
-	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	shade.gui_input.connect(func(e):
 		if e is InputEventScreenTouch and e.pressed:
 			close_modal())
 	_modal_layer.add_child(shade)
 
 	var frame := Style.panel(Style.PANEL, 16, 2)
-	frame.set_anchors_preset(Control.PRESET_CENTER)
+	frame.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	frame.custom_minimum_size = Vector2(min(560.0, size.x - 40.0), 0)
 	_modal_layer.add_child(frame)
 

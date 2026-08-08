@@ -21,7 +21,7 @@ func setup(root: Control) -> void:
 
 func _ready() -> void:
 	var col := Style.vbox(12)
-	col.set_anchors_preset(Control.PRESET_FULL_RECT)
+	col.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	var cover := Art.loading_cover()
 	if cover:

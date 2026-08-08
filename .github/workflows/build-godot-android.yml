@@ -100,6 +100,18 @@ jobs:
           set -euo pipefail
           godot --headless --script res://game/tests/Tests.gd
 
+      - name: UI layout smoke test
+        run: |
+          set -euo pipefail
+          # Boots the real game headless and asserts every screen actually
+          # occupies the screen. The simulation tests cannot see layout bugs.
+          godot --headless -- --uitest 2>&1 | tee /tmp/ui.log
+          if grep -q "SCRIPT ERROR" /tmp/ui.log; then
+            echo "::error::script errors while booting the UI"
+            exit 1
+          fi
+          grep -q "UITEST OK" /tmp/ui.log
+
       - name: Export APK
         env:
           GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /home/runner/.android/debug.keystore
