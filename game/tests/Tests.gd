@@ -371,7 +371,12 @@ func _test_movement_and_camp() -> void:
 	check(s["movements"].size() == 1, "movement created")
 
 	var xp_before := float(s["hero"]["xp"]) + float(s["hero"]["level"]) * 1000.0
-	Sim.advance_to(s, 200000.0)
+
+	# Stop short of the respawn timer, or the camp is already back on its feet
+	# by the time we assert that it was cleared.
+	var settled := 20000.0
+	check(settled < Sim.CAMP_RESPAWN, "test window is inside the respawn timer")
+	Sim.advance_to(s, settled)
 
 	check(s["movements"].is_empty(), "movement resolved and returned")
 	check(int(v["troops"].get("legionnaire", 0)) > 400, "survivors came home")
@@ -386,7 +391,7 @@ func _test_movement_and_camp() -> void:
 	check(has_battle, "battle report written")
 
 	# Camps come back.
-	Sim.advance_to(s, 200000.0 + Sim.CAMP_RESPAWN + 60.0)
+	Sim.advance_to(s, settled + Sim.CAMP_RESPAWN + 60.0)
 	check(bool(camp["alive"]), "camp respawned")
 
 

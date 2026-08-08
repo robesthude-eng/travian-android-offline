@@ -368,7 +368,6 @@ static func _accrue(state: Dictionary, dt: float) -> void:
 			var val: float = float(v["res"][r]) + rate * hours * speed
 			v["res"][r] = clampf(val, 0.0, cap)
 		v["cp"] = float(v["cp"]) + culture_rate(v) * hours * speed
-		_schedule_starvation(state, v)
 
 
 ## If a village is running a crop deficit, work out when the granary empties so
@@ -542,6 +541,12 @@ static func advance_to(state: Dictionary, t_target: float) -> void:
 	var guard := 0
 	while float(state["t"]) < t_target and guard < MAX_EVENTS_PER_ADVANCE:
 		guard += 1
+		# A village that has just gone into crop deficit has no famine on the
+		# calendar yet. Book it before looking for the next event, or a single
+		# long offline jump would step straight over the famine that should
+		# have happened inside it.
+		for v in state["villages"]:
+			_schedule_starvation(state, v)
 		var t_next := _next_event_time(state, t_target)
 		_accrue(state, t_next - float(state["t"]))
 		state["t"] = t_next
